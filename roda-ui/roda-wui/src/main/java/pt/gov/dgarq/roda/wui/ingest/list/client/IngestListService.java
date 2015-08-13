@@ -5,15 +5,21 @@ package pt.gov.dgarq.roda.wui.ingest.list.client;
 
 import java.util.Map;
 
-import pt.gov.dgarq.roda.core.common.RODAException;
-import pt.gov.dgarq.roda.core.data.SIPState;
-import pt.gov.dgarq.roda.core.data.adapter.ContentAdapter;
-import pt.gov.dgarq.roda.core.data.adapter.filter.Filter;
-import pt.gov.dgarq.roda.wui.common.client.PrintReportException;
-
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
+
+import pt.gov.dgarq.roda.core.common.AuthorizationDeniedException;
+import pt.gov.dgarq.roda.core.common.RODAException;
+import pt.gov.dgarq.roda.core.data.adapter.ContentAdapter;
+import pt.gov.dgarq.roda.core.data.adapter.facet.Facets;
+import pt.gov.dgarq.roda.core.data.adapter.filter.Filter;
+import pt.gov.dgarq.roda.core.data.adapter.sort.Sorter;
+import pt.gov.dgarq.roda.core.data.adapter.sublist.Sublist;
+import pt.gov.dgarq.roda.core.data.v2.IndexResult;
+import pt.gov.dgarq.roda.core.data.v2.SIPReport;
+import pt.gov.dgarq.roda.wui.common.client.GenericException;
+import pt.gov.dgarq.roda.wui.common.client.PrintReportException;
 
 /**
  * @author Luis Faria
@@ -24,7 +30,7 @@ public interface IngestListService extends RemoteService {
 	/**
 	 * Ingest list service URI
 	 */
-	public static final String SERVICE_URI = "/ingestlist";
+	public static final String SERVICE_URI = "ingestlist";
 
 	/**
 	 * Utilities
@@ -38,46 +44,25 @@ public interface IngestListService extends RemoteService {
 		 */
 		public static IngestListServiceAsync getInstance() {
 
-			IngestListServiceAsync instance = (IngestListServiceAsync) GWT
-					.create(IngestListService.class);
+			IngestListServiceAsync instance = (IngestListServiceAsync) GWT.create(IngestListService.class);
 			ServiceDefTarget target = (ServiceDefTarget) instance;
 			target.setServiceEntryPoint(GWT.getModuleBaseURL() + SERVICE_URI);
 			return instance;
 		}
 	}
 
-	/**
-	 * Get a SIPState with its SIP id
-	 * 
-	 * @param sipId
-	 * @return the SIP State or null if the sipId does not exist
-	 * @throws RODAException
-	 */
-	public SIPState getSipState(String sipId) throws RODAException;
+	public Long countSipReports(Filter filter) throws AuthorizationDeniedException, GenericException;
 
-	/**
-	 * Get SIP count
-	 * 
-	 * @param filter
-	 * @return
-	 * @throws RODAException
-	 */
-	public int getSIPCount(Filter filter) throws RODAException;
+	public IndexResult<SIPReport> findSipReports(Filter filter, Sorter sorter, Sublist sublist, Facets facets)
+			throws AuthorizationDeniedException, GenericException;
 
-	/**
-	 * Get SIP list
-	 * 
-	 * @param adapter
-	 * @return
-	 * @throws RODAException
-	 */
-	public SIPState[] getSIPs(ContentAdapter adapter) throws RODAException;
+	public SIPReport retrieveSipReport(String sipReportId) throws AuthorizationDeniedException, GenericException;
 
 	/**
 	 * Accept a SIP
 	 * 
 	 * @param sipId
-	 * @param message 
+	 * @param message
 	 * @throws RODAException
 	 */
 	public void acceptSIP(String sipId, String message) throws RODAException;
@@ -93,8 +78,7 @@ public interface IngestListService extends RemoteService {
 	 *            rejection
 	 * @throws RODAException
 	 */
-	public void rejectSIP(String sipId, String message, boolean notifyProducer)
-			throws RODAException;
+	public void rejectSIP(String sipId, String message, boolean notifyProducer) throws RODAException;
 
 	/**
 	 * Set SIP list report info parameters
@@ -104,10 +88,8 @@ public interface IngestListService extends RemoteService {
 	 * @throws RODAException
 	 * @throws PrintReportException
 	 */
-	public void setSIPListReportInfo(ContentAdapter adapter, String locale)
-			throws PrintReportException;
+	public void setSIPListReportInfo(ContentAdapter adapter, String locale) throws PrintReportException;
 
-	
 	/**
 	 * Get accept message templates
 	 * 
@@ -115,7 +97,7 @@ public interface IngestListService extends RemoteService {
 	 * @return
 	 */
 	public Map<String, String> getAcceptMessageTemplates(String localeString);
-	
+
 	/**
 	 * Get reject message templates
 	 * 

@@ -26,6 +26,7 @@ import pt.gov.dgarq.roda.core.plugins.PluginException;
 import pt.gov.dgarq.roda.core.stubs.Browser;
 import pt.gov.dgarq.roda.core.stubs.Editor;
 import pt.gov.dgarq.roda.core.stubs.IngestMonitor;
+import pt.gov.dgarq.roda.servlet.cas.CASUtility;
 
 /**
  * @author Rui Castro
@@ -124,9 +125,10 @@ public class ResetNormalizedSIPPermissionsPlugin extends AbstractPlugin {
 		int countError = 0;
 
 		ContentAdapter contentAdapter = new ContentAdapter();
-		contentAdapter.setFilter(new Filter(new FilterParameter[] {
-				new SimpleFilterParameter("state", "SIP_NORMALIZED"), //$NON-NLS-1$ //$NON-NLS-2$
-				new SimpleFilterParameter("processing", "false") })); //$NON-NLS-1$ //$NON-NLS-2$
+		Filter f = new Filter();
+		f.add(new SimpleFilterParameter("state", "SIP_NORMALIZED"));
+		f.add(new SimpleFilterParameter("processing", "false"));
+		contentAdapter.setFilter(f);
 
 		SIPState[] normalizedSIPStates = null;
 		try {
@@ -215,13 +217,22 @@ public class ResetNormalizedSIPPermissionsPlugin extends AbstractPlugin {
 		return getParameterValues().get(
 				PARAMETER_RODA_CORE_PASSWORD().getName());
 	}
+	
+	private URL getCasURL() throws MalformedURLException {
+		return new URL(getParameterValues().get(
+				PARAMETER_RODA_CAS_URL().getName()));
+	}
+	private URL getCoreURL() throws MalformedURLException {
+		return new URL(getParameterValues().get(
+				PARAMETER_RODA_CORE_URL().getName()));
+	}
 
 	private void initRODAServices() throws PluginException {
 
 		try {
-
+			CASUtility casUtility = new CASUtility(getCasURL(),getCoreURL());
 			this.rodaClient = new RODAClient(getRodaServicesURL(),
-					getUsername(), getPassword());
+					getUsername(), getPassword(),casUtility);
 
 			this.browserService = this.rodaClient.getBrowserService();
 			this.editorService = this.rodaClient.getEditorService();

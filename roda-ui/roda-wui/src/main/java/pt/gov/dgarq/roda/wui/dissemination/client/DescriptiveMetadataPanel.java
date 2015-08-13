@@ -6,15 +6,6 @@ package pt.gov.dgarq.roda.wui.dissemination.client;
 import java.util.List;
 import java.util.Vector;
 
-import pt.gov.dgarq.roda.core.data.DescriptionObject;
-import pt.gov.dgarq.roda.core.data.eadc.DescriptionLevel;
-import pt.gov.dgarq.roda.wui.common.client.ClientLogger;
-import pt.gov.dgarq.roda.wui.common.client.widgets.LoadingPopup;
-import pt.gov.dgarq.roda.wui.dissemination.browse.client.Browse;
-import pt.gov.dgarq.roda.wui.dissemination.browse.client.BrowserService;
-import pt.gov.dgarq.roda.wui.dissemination.browse.client.CollectionsTreeItem;
-import pt.gov.dgarq.roda.wui.management.editor.client.EditorService;
-
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.ChangeListener;
@@ -24,19 +15,22 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import config.i18n.client.DisseminationConstants;
+import pt.gov.dgarq.roda.core.data.DescriptionObject;
+import pt.gov.dgarq.roda.wui.common.client.ClientLogger;
+import pt.gov.dgarq.roda.wui.common.client.tools.DescriptionLevelUtils;
+import pt.gov.dgarq.roda.wui.common.client.widgets.LoadingPopup;
+import pt.gov.dgarq.roda.wui.dissemination.browse.client.BrowserService;
+import pt.gov.dgarq.roda.wui.management.editor.client.EditorService;
 
 /**
  * @author Luis Faria
  * 
  */
-public class DescriptiveMetadataPanel extends Composite implements
-		SourcesChangeEvents {
+public class DescriptiveMetadataPanel extends Composite implements SourcesChangeEvents {
 
-	private static ClientLogger logger = new ClientLogger(
-			DescriptiveMetadataPanel.class.getName());
+	private static ClientLogger logger = new ClientLogger(DescriptiveMetadataPanel.class.getName());
 
-	private static DisseminationConstants constants = (DisseminationConstants) GWT
-			.create(DisseminationConstants.class);
+	private static DisseminationConstants constants = (DisseminationConstants) GWT.create(DisseminationConstants.class);
 
 	private final String pid;
 
@@ -58,6 +52,8 @@ public class DescriptiveMetadataPanel extends Composite implements
 
 	private DescriptionElement title;
 
+	private DescriptionElement abstractNote;
+
 	private DescriptionElement dateInitial;
 
 	private DescriptionElement dateFinal;
@@ -71,6 +67,8 @@ public class DescriptiveMetadataPanel extends Composite implements
 	private DescriptionGroupPanel relatedMaterials;
 
 	private DescriptionGroupPanel notes;
+
+	private DescriptionGroupPanel processInfo;
 
 	private final List<ChangeListener> listeners;
 
@@ -86,8 +84,7 @@ public class DescriptiveMetadataPanel extends Composite implements
 		this((String) null, new AsyncCallback<DescriptionObject>() {
 
 			public void onFailure(Throwable caught) {
-				logger.error("Error initializing descriptive metadata panel",
-						caught);
+				logger.error("Error initializing descriptive metadata panel", caught);
 			}
 
 			public void onSuccess(DescriptionObject obj) {
@@ -97,13 +94,11 @@ public class DescriptiveMetadataPanel extends Composite implements
 		});
 	}
 
-	public DescriptiveMetadataPanel(String pid,
-			AsyncCallback<DescriptionObject> callback) {
+	public DescriptiveMetadataPanel(String pid, AsyncCallback<DescriptionObject> callback) {
 		this(pid, false, callback);
 	}
 
-	public DescriptiveMetadataPanel(String pid, boolean valuesAsHtml,
-			AsyncCallback<DescriptionObject> callback) {
+	public DescriptiveMetadataPanel(String pid, boolean valuesAsHtml, AsyncCallback<DescriptionObject> callback) {
 		super();
 		this.pid = pid;
 		this.descObj = null;
@@ -124,8 +119,7 @@ public class DescriptiveMetadataPanel extends Composite implements
 		this(descObj, false);
 	}
 
-	public DescriptiveMetadataPanel(DescriptionObject descObj,
-			boolean valuesAsHtml) {
+	public DescriptiveMetadataPanel(DescriptionObject descObj, boolean valuesAsHtml) {
 		super();
 		this.pid = descObj.getPid();
 		this.descObj = descObj;
@@ -143,36 +137,34 @@ public class DescriptiveMetadataPanel extends Composite implements
 
 	private void init(final AsyncCallback<DescriptionObject> callback) {
 		if (pid != null) {
-			BrowserService.Util.getInstance().getDescriptionObject(pid,
-					new AsyncCallback<DescriptionObject>() {
+			BrowserService.Util.getInstance().getDescriptionObject(pid, new AsyncCallback<DescriptionObject>() {
 
-						public void onFailure(Throwable caught) {
-							callback.onFailure(caught);
-						}
+				public void onFailure(Throwable caught) {
+					callback.onFailure(caught);
+				}
 
-						public void onSuccess(DescriptionObject obj) {
-							descObj = obj;
-							postInit();
-							callback.onSuccess(descObj);
-						}
+				public void onSuccess(DescriptionObject obj) {
+					descObj = obj;
+					postInit();
+					callback.onSuccess(descObj);
+				}
 
-					});
+			});
 		} else {
-			EditorService.Util.getInstance().getDefaultDescriptionObject(
-					new AsyncCallback<DescriptionObject>() {
+			EditorService.Util.getInstance().getDefaultDescriptionObject(new AsyncCallback<DescriptionObject>() {
 
-						public void onFailure(Throwable caught) {
-							callback.onFailure(caught);
-						}
+				public void onFailure(Throwable caught) {
+					callback.onFailure(caught);
+				}
 
-						public void onSuccess(DescriptionObject obj) {
-							descObj = obj;
-							descObj.setLevel(DescriptionLevel.ITEM);
-							postInit();
-							callback.onSuccess(descObj);
-						}
+				public void onSuccess(DescriptionObject obj) {
+					descObj = obj;
+					descObj.setLevel(DescriptionLevelUtils.REPRESENTATION_DESCRIPTION_LEVELS.get(0));
+					postInit();
+					callback.onSuccess(descObj);
+				}
 
-					});
+			});
 
 		}
 
@@ -188,6 +180,7 @@ public class DescriptiveMetadataPanel extends Composite implements
 		access.setReadonly(readonly);
 		relatedMaterials.setReadonly(readonly);
 		notes.setReadonly(readonly);
+		processInfo.setReadonly(readonly);
 
 		// Enforce optional visible state
 		identification.setOptionalVisible(optionalVisible);
@@ -196,6 +189,7 @@ public class DescriptiveMetadataPanel extends Composite implements
 		access.setOptionalVisible(optionalVisible);
 		relatedMaterials.setOptionalVisible(optionalVisible);
 		notes.setOptionalVisible(optionalVisible);
+		processInfo.setOptionalVisible(optionalVisible);
 
 		initialized = true;
 		for (LoadListener listener : loadlisteners) {
@@ -219,6 +213,7 @@ public class DescriptiveMetadataPanel extends Composite implements
 		access = createAccessGroup();
 		relatedMaterials = createRelatedMaterialsGroup();
 		notes = createNotesGroup();
+		processInfo = createProcessInfoGroup();
 
 		layout.add(identification);
 		layout.add(context);
@@ -226,13 +221,15 @@ public class DescriptiveMetadataPanel extends Composite implements
 		layout.add(access);
 		layout.add(relatedMaterials);
 		layout.add(notes);
+		layout.add(processInfo);
 
-		identification.setOpen(true);
-		context.setOpen(true);
-		content.setOpen(true);
-		access.setOpen(true);
-		relatedMaterials.setOpen(true);
-		notes.setOpen(true);
+		// identification.setOpen(true);
+		// context.setOpen(true);
+		// content.setOpen(true);
+		// access.setOpen(true);
+		// relatedMaterials.setOpen(true);
+		// notes.setOpen(true);
+		// processInfo.setOpen(true);
 
 		ChangeListener listener = new ChangeListener() {
 
@@ -248,107 +245,93 @@ public class DescriptiveMetadataPanel extends Composite implements
 		access.addChangeListener(listener);
 		relatedMaterials.addChangeListener(listener);
 		notes.addChangeListener(listener);
-
+		processInfo.addChangeListener(listener);
 	}
 
 	private DescriptionGroupPanel createIdentificationGroup() {
-		DescriptionGroupPanel group = new DescriptionGroupPanel(constants
-				.identificationGroupLabel(), descObj);
-		id = new DescriptionElement(descObj, DescriptionObject.ID, constants
-				.reference(), true, valuesAsHtml);
-		DescriptionElement completeReference = new DescriptionElement(descObj,
-				DescriptionObject.COMPLETE_REFERENCE, constants
-						.completeReference(), false, valuesAsHtml);
+		DescriptionGroupPanel group = new DescriptionGroupPanel(constants.identificationGroupLabel(), descObj);
+		id = new DescriptionElement(descObj, DescriptionObject.ID, constants.reference(), true, valuesAsHtml);
+		DescriptionElement completeReference = new DescriptionElement(descObj, DescriptionObject.COMPLETE_REFERENCE,
+				constants.completeReference(), false, valuesAsHtml);
 
-		DescriptionElement handle = new DescriptionElement(descObj,
-				DescriptionObject.HANDLE_URL, constants.handle(), false,
-				valuesAsHtml);
-
-		title = new DescriptionElement(descObj, DescriptionObject.TITLE,
-				constants.title(), true, valuesAsHtml);
-
-		level = new DescriptionElement(descObj, DescriptionObject.LEVEL,
-				constants.level(), true, valuesAsHtml);
-
-		dateInitial = new DescriptionElement(descObj,
-				DescriptionObject.DATE_INITIAL, constants.dateInitial(), true,
-				valuesAsHtml);
-		dateFinal = new DescriptionElement(descObj,
-				DescriptionObject.DATE_FINAL, constants.dateFinal(), true,
-				valuesAsHtml);
-
-		DescriptionElement countryCode = new DescriptionElement(descObj,
-				DescriptionObject.COUNTRYCODE, constants.countryCode(), true,
-				valuesAsHtml);
-
-		DescriptionElement repositoryCode = new DescriptionElement(descObj,
-				DescriptionObject.REPOSITORYCODE, constants.repositoryCode(),
-				true, valuesAsHtml);
-
-		DescriptionElement origination = new DescriptionElement(descObj,
-				DescriptionObject.ORIGINATION, constants.origination(), true,
-				valuesAsHtml);
-		
-		DescriptionElement acqInfoNum = new DescriptionElement(descObj,
-				DescriptionObject.ACQINFO_NUM, constants.acqInfoNum(), false,
-				valuesAsHtml);
-		
-		DescriptionElement acqInfoDate = new DescriptionElement(descObj,
-				DescriptionObject.ACQINFO_DATE, constants.acqInfoDate(), false,
-				valuesAsHtml);
-		
-		DescriptionElement materialSpec = new DescriptionElement(descObj,
-				DescriptionObject.MATERIALSPEC, constants.materialspec(),
+		DescriptionElement handle = new DescriptionElement(descObj, DescriptionObject.HANDLE_URL, constants.handle(),
 				false, valuesAsHtml);
 
-		DescriptionElement physDesc = new DescriptionElement(descObj,
-				DescriptionObject.PHYSDESC, constants.physDesc(), false,
+		title = new DescriptionElement(descObj, DescriptionObject.TITLE, constants.title(), true, valuesAsHtml);
+
+		abstractNote = new DescriptionElement(descObj, DescriptionObject.ABSTRACT, constants.abstractNote(), false,
 				valuesAsHtml);
 
-		DescriptionElement physDescDateInitial = new DescriptionElement(
-				descObj, DescriptionObject.PHYSDESC_DATE_INITIAL, constants
-						.physDescDateInitial(), false, valuesAsHtml);
+		level = new DescriptionElement(descObj, DescriptionObject.LEVEL, constants.level(), true, valuesAsHtml);
 
-		DescriptionElement physDescDateFinal = new DescriptionElement(descObj,
-				DescriptionObject.PHYSDESC_DATE_FINAL, constants
-						.physDescDateFinal(), false, valuesAsHtml);
+		dateInitial = new DescriptionElement(descObj, DescriptionObject.DATE_INITIAL, constants.dateInitial(), true,
+				valuesAsHtml);
+		dateFinal = new DescriptionElement(descObj, DescriptionObject.DATE_FINAL, constants.dateFinal(), true,
+				valuesAsHtml);
 
-		DescriptionElement physDescDimensions = new DescriptionElement(descObj,
-				DescriptionObject.PHYSDESC_DIMENSIONS, constants
-						.physDescDimensions(), false, valuesAsHtml);
+		DescriptionElement countryCode = new DescriptionElement(descObj, DescriptionObject.COUNTRYCODE,
+				constants.countryCode(), true, valuesAsHtml);
 
-		DescriptionElement physDescPhysFacet = new DescriptionElement(descObj,
-				DescriptionObject.PHYSDESC_PHYSFACET, constants
-						.physDescPhysFacet(), false, valuesAsHtml);
+		DescriptionElement repositoryCode = new DescriptionElement(descObj, DescriptionObject.REPOSITORYCODE,
+				constants.repositoryCode(), true, valuesAsHtml);
 
-		DescriptionElement physDescExtent = new DescriptionElement(descObj,
-				DescriptionObject.PHYSDESC_EXTENT, constants.physDescExtent(),
+		DescriptionElement origination = new DescriptionElement(descObj, DescriptionObject.ORIGINATION,
+				constants.origination(), true, valuesAsHtml);
+
+		// DescriptionElement acqInfoNum = new DescriptionElement(descObj,
+		// DescriptionObject.ACQINFO_NUM, constants.acqInfoNum(), false,
+		// valuesAsHtml);
+		//
+		// DescriptionElement acqInfoDate = new DescriptionElement(descObj,
+		// DescriptionObject.ACQINFO_DATE, constants.acqInfoDate(), false,
+		// valuesAsHtml);
+
+		DescriptionElement materialSpec = new DescriptionElement(descObj, DescriptionObject.MATERIALSPEC,
+				constants.materialspec(), false, valuesAsHtml);
+
+		DescriptionElement physDescGenreform = new DescriptionElement(descObj, DescriptionObject.PHYSDESC_GENREFORM,
+				constants.physDescGenreform(), false, valuesAsHtml);
+
+		DescriptionElement physDesc = new DescriptionElement(descObj, DescriptionObject.PHYSDESC, constants.physDesc(),
 				false, valuesAsHtml);
 
-		DescriptionElement languages = new DescriptionElement(descObj,
-				DescriptionObject.LANGMATERIAL_LANGUAGES, constants
-						.langMaterialLaguages(), false, valuesAsHtml);
+		DescriptionElement physDescDateInitial = new DescriptionElement(descObj,
+				DescriptionObject.PHYSDESC_DATE_INITIAL, constants.physDescDateInitial(), false, valuesAsHtml);
 
-		DescriptionElement prefercite = new DescriptionElement(descObj,
-				DescriptionObject.PREFERCITE, constants.preferCite(), false,
-				valuesAsHtml);
+		DescriptionElement physDescDateFinal = new DescriptionElement(descObj, DescriptionObject.PHYSDESC_DATE_FINAL,
+				constants.physDescDateFinal(), false, valuesAsHtml);
+
+		DescriptionElement physDescDimensions = new DescriptionElement(descObj, DescriptionObject.PHYSDESC_DIMENSIONS,
+				constants.physDescDimensions(), false, valuesAsHtml);
+
+		DescriptionElement physDescPhysFacet = new DescriptionElement(descObj, DescriptionObject.PHYSDESC_PHYSFACET,
+				constants.physDescPhysFacet(), false, valuesAsHtml);
+
+		DescriptionElement physDescExtent = new DescriptionElement(descObj, DescriptionObject.PHYSDESC_EXTENT,
+				constants.physDescExtent(), false, valuesAsHtml);
+
+		DescriptionElement languages = new DescriptionElement(descObj, DescriptionObject.LANGMATERIAL_LANGUAGES,
+				constants.langMaterialLanguages(), false, valuesAsHtml);
+
+		DescriptionElement prefercite = new DescriptionElement(descObj, DescriptionObject.PREFERCITE,
+				constants.preferCite(), false, valuesAsHtml);
 
 		id.addEditMode(DescriptionElement.EditMode.TEXT_LINE);
 		title.addEditMode(DescriptionElement.EditMode.TEXT_LINE);
+		abstractNote.addEditMode(DescriptionElement.EditMode.TEXT_AREA);
 		level.addEditMode(DescriptionElement.EditMode.LEVEL);
 		dateInitial.addEditMode(DescriptionElement.EditMode.DATE);
 		dateFinal.addEditMode(DescriptionElement.EditMode.DATE);
 		countryCode.addEditMode(DescriptionElement.EditMode.COUNTRYCODE);
 		repositoryCode.addEditMode(DescriptionElement.EditMode.TEXT_LINE);
 		origination.addEditMode(DescriptionElement.EditMode.TEXT_LINE);
-		materialSpec.addEditMode(DescriptionElement.EditMode.TEXT_AREA);
+		materialSpec.addEditMode(DescriptionElement.EditMode.MATERIAL_SPECS);
+		physDescGenreform.addEditMode(DescriptionElement.EditMode.PHYSDESC_GENREFORM);
 		physDesc.addEditMode(DescriptionElement.EditMode.TEXT_AREA);
 		physDescDateInitial.addEditMode(DescriptionElement.EditMode.DATE);
 		physDescDateFinal.addEditMode(DescriptionElement.EditMode.DATE);
-		physDescDimensions
-				.addEditMode(DescriptionElement.EditMode.PHYSDESC_DIMENSIONS);
-		physDescPhysFacet
-				.addEditMode(DescriptionElement.EditMode.PHYSDESC_PHYSFACET);
+		physDescDimensions.addEditMode(DescriptionElement.EditMode.PHYSDESC_DIMENSIONS);
+		physDescPhysFacet.addEditMode(DescriptionElement.EditMode.PHYSDESC_PHYSFACET);
 		physDescExtent.addEditMode(DescriptionElement.EditMode.PHYSDESC_EXTENT);
 		languages.addEditMode(DescriptionElement.EditMode.LANGUAGES_LIST);
 		prefercite.addEditMode(DescriptionElement.EditMode.TEXT_LINE);
@@ -357,15 +340,17 @@ public class DescriptiveMetadataPanel extends Composite implements
 		group.addElement(completeReference);
 		group.addElement(handle);
 		group.addElement(title);
+		group.addElement(abstractNote);
 		group.addElement(level);
 		group.addElement(dateInitial);
 		group.addElement(dateFinal);
 		group.addElement(countryCode);
 		group.addElement(repositoryCode);
 		group.addElement(origination);
-		group.addElement(acqInfoNum);
-		group.addElement(acqInfoDate);
+		// group.addElement(acqInfoNum);
+		// group.addElement(acqInfoDate);
 		group.addElement(materialSpec);
+		group.addElement(physDescGenreform);
 		group.addElement(physDesc);
 		group.addElement(physDescDateInitial);
 		group.addElement(physDescDateFinal);
@@ -395,6 +380,7 @@ public class DescriptiveMetadataPanel extends Composite implements
 						access.setReadonly(readonly);
 						relatedMaterials.setReadonly(readonly);
 						notes.setReadonly(readonly);
+						processInfo.setReadonly(readonly);
 					}
 
 				});
@@ -417,6 +403,7 @@ public class DescriptiveMetadataPanel extends Composite implements
 					access.setOptionalVisible(optionalVisible);
 					relatedMaterials.setOptionalVisible(optionalVisible);
 					notes.setOptionalVisible(optionalVisible);
+					processInfo.setOptionalVisible(optionalVisible);
 				}
 
 			});
@@ -424,26 +411,21 @@ public class DescriptiveMetadataPanel extends Composite implements
 	}
 
 	private DescriptionGroupPanel createContextGroup() {
-		DescriptionGroupPanel group = new DescriptionGroupPanel(constants
-				.contextGroupLabel(), descObj);
+		DescriptionGroupPanel group = new DescriptionGroupPanel(constants.contextGroupLabel(), descObj);
 
-		DescriptionElement bioghist = new DescriptionElement(descObj,
-				DescriptionObject.BIOGHIST, constants.bioghist(), false,
-				valuesAsHtml);
-		DescriptionElement chronlist = new DescriptionElement(descObj,
-				DescriptionObject.BIOGHIST_CHRONLIST, constants
-						.bioghistChronlist(), false, valuesAsHtml);
-		DescriptionElement custodhist = new DescriptionElement(descObj,
-				DescriptionObject.CUSTODHIST, constants.custodhist(), false,
-				valuesAsHtml);
-		DescriptionElement acqinfo = new DescriptionElement(descObj,
-				DescriptionObject.ACQINFO, constants.acqinfo(), false,
-				valuesAsHtml);
+		DescriptionElement bioghist = new DescriptionElement(descObj, DescriptionObject.BIOGHIST, constants.bioghist(),
+				false, valuesAsHtml);
+		DescriptionElement chronlist = new DescriptionElement(descObj, DescriptionObject.BIOGHIST_CHRONLIST,
+				constants.bioghistChronlist(), false, valuesAsHtml);
+		DescriptionElement custodhist = new DescriptionElement(descObj, DescriptionObject.CUSTODHIST,
+				constants.custodhist(), false, valuesAsHtml);
+		DescriptionElement acqinfo = new DescriptionElement(descObj, DescriptionObject.ACQINFO, constants.acqinfo(),
+				false, valuesAsHtml);
 
 		bioghist.addEditMode(DescriptionElement.EditMode.TEXT_BIGAREA);
 		chronlist.addEditMode(DescriptionElement.EditMode.CHRON_LIST);
 		custodhist.addEditMode(DescriptionElement.EditMode.TEXT_BIGAREA);
-		acqinfo.addEditMode(DescriptionElement.EditMode.TEXT_AREA);
+		acqinfo.addEditMode(DescriptionElement.EditMode.ACQUISITIONS_INFOS);
 
 		group.addElement(bioghist);
 		group.addElement(chronlist);
@@ -454,21 +436,16 @@ public class DescriptiveMetadataPanel extends Composite implements
 	}
 
 	private DescriptionGroupPanel createContentGroup() {
-		DescriptionGroupPanel group = new DescriptionGroupPanel(constants
-				.contentGroupLabel(), descObj);
+		DescriptionGroupPanel group = new DescriptionGroupPanel(constants.contentGroupLabel(), descObj);
 
-		DescriptionElement scopeContent = new DescriptionElement(descObj,
-				DescriptionObject.SCOPECONTENT, constants.scopeContent(), true,
-				valuesAsHtml);
-		DescriptionElement arrangement = new DescriptionElement(descObj,
-				DescriptionObject.ARRANGEMENT, constants.arrangement(), false,
-				valuesAsHtml);
-		DescriptionElement appraisal = new DescriptionElement(descObj,
-				DescriptionObject.APPRAISAL, constants.appraisal(), false,
-				valuesAsHtml);
-		DescriptionElement accruals = new DescriptionElement(descObj,
-				DescriptionObject.ACCRUALS, constants.accruals(), false,
-				valuesAsHtml);
+		DescriptionElement scopeContent = new DescriptionElement(descObj, DescriptionObject.SCOPECONTENT,
+				constants.scopeContent(), true, valuesAsHtml);
+		DescriptionElement arrangement = new DescriptionElement(descObj, DescriptionObject.ARRANGEMENT,
+				constants.arrangement(), false, valuesAsHtml);
+		DescriptionElement appraisal = new DescriptionElement(descObj, DescriptionObject.APPRAISAL,
+				constants.appraisal(), false, valuesAsHtml);
+		DescriptionElement accruals = new DescriptionElement(descObj, DescriptionObject.ACCRUALS, constants.accruals(),
+				false, valuesAsHtml);
 
 		scopeContent.addEditMode(DescriptionElement.EditMode.TEXT_BIGAREA);
 		arrangement.addEditMode(DescriptionElement.EditMode.TEXT_AREA);
@@ -486,41 +463,38 @@ public class DescriptiveMetadataPanel extends Composite implements
 	}
 
 	private DescriptionGroupPanel createAccessGroup() {
-		DescriptionGroupPanel group = new DescriptionGroupPanel(constants
-				.accessGroupLabel(), descObj);
+		DescriptionGroupPanel group = new DescriptionGroupPanel(constants.accessGroupLabel(), descObj);
 
-		DescriptionElement phystech = new DescriptionElement(descObj,
-				DescriptionObject.PHYSTECH, constants.physTech(), false,
-				valuesAsHtml);
-		DescriptionElement accessRestrict = new DescriptionElement(descObj,
-				DescriptionObject.ACCESSRESTRICT, constants.accessRestrict(),
+		DescriptionElement phystech = new DescriptionElement(descObj, DescriptionObject.PHYSTECH, constants.physTech(),
 				false, valuesAsHtml);
-		DescriptionElement useRestrict = new DescriptionElement(descObj,
-				DescriptionObject.USERESTRICT, constants.useRestrict(), false,
-				valuesAsHtml);
+		DescriptionElement accessRestrict = new DescriptionElement(descObj, DescriptionObject.ACCESSRESTRICT,
+				constants.accessRestrict(), false, valuesAsHtml);
+		DescriptionElement useRestrict = new DescriptionElement(descObj, DescriptionObject.USERESTRICT,
+				constants.useRestrict(), false, valuesAsHtml);
+		DescriptionElement controlAccesses = new DescriptionElement(descObj, DescriptionObject.CONTROLACCESS,
+				constants.controlAccesses(), false, valuesAsHtml);
 
 		phystech.addEditMode(DescriptionElement.EditMode.TEXT_AREA);
 		accessRestrict.addEditMode(DescriptionElement.EditMode.TEXT_AREA);
 		useRestrict.addEditMode(DescriptionElement.EditMode.TEXT_AREA);
+		controlAccesses.addEditMode(DescriptionElement.EditMode.CONTROL_ACCESSES);
 
 		group.addElement(phystech);
 		group.addElement(accessRestrict);
 		group.addElement(useRestrict);
+		group.addElement(controlAccesses);
 
 		return group;
 	}
 
 	private DescriptionGroupPanel createRelatedMaterialsGroup() {
-		DescriptionGroupPanel group = new DescriptionGroupPanel(constants
-				.relatedMaterialsGroupLabel(), descObj);
-		DescriptionElement relatedMaterial = new DescriptionElement(descObj,
-				DescriptionObject.RELATEDMATERIAL, constants
-						.relatedMaterialsGroupLabel(), false, valuesAsHtml);
-		DescriptionElement otherFindAid = new DescriptionElement(descObj,
-				DescriptionObject.OTHERFINDAID, constants.otherFindAid(),
-				false, valuesAsHtml);
+		DescriptionGroupPanel group = new DescriptionGroupPanel(constants.relatedMaterialsGroupLabel(), descObj);
+		DescriptionElement relatedMaterial = new DescriptionElement(descObj, DescriptionObject.RELATEDMATERIAL,
+				constants.relatedMaterialsGroupLabel(), false, valuesAsHtml);
+		DescriptionElement otherFindAid = new DescriptionElement(descObj, DescriptionObject.OTHERFINDAID,
+				constants.otherFindAid(), false, valuesAsHtml);
 
-		relatedMaterial.addEditMode(DescriptionElement.EditMode.TEXT_AREA);
+		relatedMaterial.addEditMode(DescriptionElement.EditMode.RELATED_MATERIALS);
 		otherFindAid.addEditMode(DescriptionElement.EditMode.TEXT_AREA);
 
 		group.addElement(relatedMaterial);
@@ -530,20 +504,39 @@ public class DescriptiveMetadataPanel extends Composite implements
 	}
 
 	private DescriptionGroupPanel createNotesGroup() {
-		DescriptionGroupPanel group = new DescriptionGroupPanel(constants
-				.notesGroupLabel(), descObj);
+		DescriptionGroupPanel group = new DescriptionGroupPanel(constants.notesGroupLabel(), descObj);
 
-		DescriptionElement bibliography = new DescriptionElement(descObj,
-				DescriptionObject.BIBLIOGRAPHY, constants.bibliography(),
+		DescriptionElement notes = new DescriptionElement(descObj, DescriptionObject.NOTE, constants.notes(), false,
+				valuesAsHtml);
+		DescriptionElement keywords = new DescriptionElement(descObj, DescriptionObject.INDEX, constants.keywords(),
 				false, valuesAsHtml);
-		DescriptionElement notes = new DescriptionElement(descObj,
-				DescriptionObject.NOTE, constants.note(), false, valuesAsHtml);
+		DescriptionElement bibliography = new DescriptionElement(descObj, DescriptionObject.BIBLIOGRAPHY,
+				constants.bibliography(), false, valuesAsHtml);
+		DescriptionElement odd = new DescriptionElement(descObj, DescriptionObject.ODD, constants.odd(), false,
+				valuesAsHtml);
 
-		notes.addEditMode(DescriptionElement.EditMode.TEXT_AREA);
+		notes.addEditMode(DescriptionElement.EditMode.NOTES);
+		keywords.addEditMode(DescriptionElement.EditMode.KEYWORDS);
 		bibliography.addEditMode(DescriptionElement.EditMode.TEXT_AREA);
+		odd.addEditMode(DescriptionElement.EditMode.TEXT_AREA);
 
 		group.addElement(notes);
+		group.addElement(keywords);
 		group.addElement(bibliography);
+		group.addElement(odd);
+
+		return group;
+	}
+
+	private DescriptionGroupPanel createProcessInfoGroup() {
+		DescriptionGroupPanel group = new DescriptionGroupPanel(constants.processInfoGroupLabel(), descObj);
+
+		DescriptionElement redaction = new DescriptionElement(descObj, DescriptionObject.PROCESSINFO,
+				constants.redaction(), false, valuesAsHtml);
+
+		redaction.addEditMode(DescriptionElement.EditMode.PROCESS_INFO);
+
+		group.addElement(redaction);
 
 		return group;
 	}
@@ -559,6 +552,7 @@ public class DescriptiveMetadataPanel extends Composite implements
 		access.save();
 		relatedMaterials.save();
 		notes.save();
+		processInfo.save();
 	}
 
 	/**
@@ -569,8 +563,7 @@ public class DescriptiveMetadataPanel extends Composite implements
 	 *            changed DescriptionObject
 	 */
 	public void commit(final AsyncCallback<DescriptionObject> callback) {
-		final LoadingPopup loading = new LoadingPopup(
-				getParent() == null ? this : getParent());
+		final LoadingPopup loading = new LoadingPopup(getParent() == null ? this : getParent());
 		loading.show();
 
 		final boolean hierarchyUpdateNeeded = id.isChanged();
@@ -582,84 +575,79 @@ public class DescriptiveMetadataPanel extends Composite implements
 
 		save();
 
-		EditorService.Util.getInstance().saveEdition(descObj,
-				new AsyncCallback<Void>() {
+		EditorService.Util.getInstance().saveEdition(descObj, new AsyncCallback<Void>() {
+
+			public void onFailure(Throwable caught) {
+				clear(new AsyncCallback<DescriptionObject>() {
 
 					public void onFailure(Throwable caught) {
-						clear(new AsyncCallback<DescriptionObject>() {
-
-							public void onFailure(Throwable caught) {
-								loading.hide();
-								logger.error("Error clearing descriptive "
-										+ "metadata panel", caught);
-							}
-
-							public void onSuccess(DescriptionObject obj) {
-								loading.hide();
-
-							}
-
-						});
-
-						// TODO catch validation errors
-						callback.onFailure(caught);
+						loading.hide();
+						logger.error("Error clearing descriptive " + "metadata panel", caught);
 					}
 
-					public void onSuccess(Void result) {
-						update(infoUpdateNeeded, hierarchyUpdateNeeded,
-								new AsyncCallback<CollectionsTreeItem>() {
+					public void onSuccess(DescriptionObject obj) {
+						loading.hide();
 
-									public void onFailure(Throwable caught) {
-										loading.hide();
-										callback.onFailure(caught);
-									}
-
-									public void onSuccess(
-											CollectionsTreeItem treeItem) {
-										loading.hide();
-										callback.onSuccess(descObj);
-									}
-								});
 					}
+
 				});
+
+				// TODO catch validation errors
+				callback.onFailure(caught);
+			}
+
+			public void onSuccess(Void result) {
+				// update(infoUpdateNeeded, hierarchyUpdateNeeded, new
+				// AsyncCallback<CollectionsTreeItem>() {
+				//
+				// public void onFailure(Throwable caught) {
+				// loading.hide();
+				// callback.onFailure(caught);
+				// }
+				//
+				// public void onSuccess(CollectionsTreeItem treeItem) {
+				// loading.hide();
+				// callback.onSuccess(descObj);
+				// }
+				// });
+			}
+		});
 	}
 
-	private void update(boolean info, boolean hierarchy,
-			final AsyncCallback<CollectionsTreeItem> callback) {
-		if (hierarchy) {
-			BrowserService.Util.getInstance().getParent(pid,
-					new AsyncCallback<String>() {
+	// private void update(boolean info, boolean hierarchy, final
+	// AsyncCallback<CollectionsTreeItem> callback) {
+	// if (hierarchy) {
+	// BrowserService.Util.getInstance().getParent(pid, new
+	// AsyncCallback<String>() {
+	//
+	// public void onFailure(Throwable caught) {
+	// logger.error("Error getting " + pid + " parent", caught);
+	// }
+	//
+	// public void onSuccess(String parentPID) {
+	// Browse.getInstance().update(parentPID, false, true, new
+	// AsyncCallback<CollectionsTreeItem>() {
+	//
+	// public void onFailure(Throwable caught) {
+	// callback.onFailure(caught);
+	// }
+	//
+	// public void onSuccess(CollectionsTreeItem treeItem) {
+	// callback.onSuccess(null);
+	// }
+	//
+	// });
 
-						public void onFailure(Throwable caught) {
-							logger.error("Error getting " + pid + " parent",
-									caught);
-						}
-
-						public void onSuccess(String parentPID) {
-							Browse.getInstance().update(parentPID, false, true,
-									new AsyncCallback<CollectionsTreeItem>() {
-
-										public void onFailure(Throwable caught) {
-											callback.onFailure(caught);
-										}
-
-										public void onSuccess(
-												CollectionsTreeItem treeItem) {
-											callback.onSuccess(null);
-										}
-
-									});
-
-						}
-
-					});
-
-		} else if (info) {
-			Browse.getInstance().update(pid, true, false, callback);
-		} else {
-			callback.onSuccess(null);
-		}
-	}
+	// }
+	//
+	// });
+	//
+	// } else if (info) {
+	// // Browse.getInstance().update(pid, true, false, callback);
+	// } else {
+	// callback.onSuccess(null);
+	// }
+	// }
 
 	public void cancel() {
 		identification.cancel();
@@ -668,6 +656,7 @@ public class DescriptiveMetadataPanel extends Composite implements
 		access.cancel();
 		relatedMaterials.cancel();
 		notes.cancel();
+		processInfo.cancel();
 	}
 
 	public void addChangeListener(ChangeListener listener) {
@@ -713,6 +702,7 @@ public class DescriptiveMetadataPanel extends Composite implements
 		valid &= access.isValid();
 		valid &= relatedMaterials.isValid();
 		valid &= notes.isValid();
+		valid &= processInfo.isValid();
 
 		return valid;
 	}
@@ -726,6 +716,7 @@ public class DescriptiveMetadataPanel extends Composite implements
 		changed |= access.isChanged();
 		changed |= relatedMaterials.isChanged();
 		changed |= notes.isChanged();
+		changed |= processInfo.isChanged();
 
 		return changed;
 	}

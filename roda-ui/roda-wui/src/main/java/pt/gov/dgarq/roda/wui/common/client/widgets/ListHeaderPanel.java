@@ -66,10 +66,9 @@ public class ListHeaderPanel extends Composite {
 	 * @param defaultSortDirection
 	 *            sort direction to be choose on first click
 	 */
-	public void addHeader(String headerLabel, String headerStyle,
-			SortParameter[] ascendingParameters, boolean defaultSortDirection) {
-		ListHeader header = new ListHeader(headerLabel, headerStyle,
-				ascendingParameters, defaultSortDirection);
+	public void addHeader(String headerLabel, String headerStyle, SortParameter[] ascendingParameters,
+			boolean defaultSortDirection) {
+		ListHeader header = new ListHeader(headerLabel, headerStyle, ascendingParameters, defaultSortDirection);
 		headers.add(header);
 		final int headerIndex = headers.indexOf(header);
 		header.addClickListener(new ClickListener() {

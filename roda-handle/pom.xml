@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>pt.gov.dgarq.roda</groupId>
 		<artifactId>roda</artifactId>
-		<version>1.2.0</version>
+		<version>2.0.0-SNAPSHOT</version>
 	</parent>
 	<dependencies>
 		<dependency>
@@ -100,7 +100,7 @@
 		</dependency>
 		<dependency>
 			<groupId>pt.gov.dgarq.roda</groupId>
-			<artifactId>mets-1.7</artifactId>
+			<artifactId>mets-1.9.1</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>

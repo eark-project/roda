@@ -3,19 +3,11 @@
  */
 package pt.gov.dgarq.roda.wui.management.event.client;
 
-import pt.gov.dgarq.roda.core.data.TaskInstance;
-import pt.gov.dgarq.roda.core.data.adapter.ContentAdapter;
 import pt.gov.dgarq.roda.core.data.adapter.filter.Filter;
 import pt.gov.dgarq.roda.core.data.adapter.filter.LikeFilterParameter;
 import pt.gov.dgarq.roda.core.data.adapter.filter.SimpleFilterParameter;
 import pt.gov.dgarq.roda.core.data.adapter.sort.SortParameter;
-import pt.gov.dgarq.roda.wui.common.client.widgets.ControlPanel;
-import pt.gov.dgarq.roda.wui.common.client.widgets.ElementPanel;
-import pt.gov.dgarq.roda.wui.common.client.widgets.LazyVerticalList;
-import pt.gov.dgarq.roda.wui.common.client.widgets.ListHeaderPanel;
-import pt.gov.dgarq.roda.wui.common.client.widgets.ControlPanel.ControlPanelListener;
-import pt.gov.dgarq.roda.wui.common.client.widgets.LazyVerticalList.ContentSource;
-import pt.gov.dgarq.roda.wui.common.client.widgets.LazyVerticalList.LazyVerticalListListener;
+import pt.gov.dgarq.roda.core.data.adapter.ContentAdapter;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -24,6 +16,14 @@ import com.google.gwt.user.client.ui.Widget;
 
 import config.i18n.client.EventManagementConstants;
 import config.i18n.client.EventManagementMessages;
+import pt.gov.dgarq.roda.core.data.TaskInstance;
+import pt.gov.dgarq.roda.wui.common.client.widgets.ControlPanel;
+import pt.gov.dgarq.roda.wui.common.client.widgets.ControlPanel.ControlPanelListener;
+import pt.gov.dgarq.roda.wui.common.client.widgets.ElementPanel;
+import pt.gov.dgarq.roda.wui.common.client.widgets.LazyVerticalList;
+import pt.gov.dgarq.roda.wui.common.client.widgets.LazyVerticalList.ContentSource;
+import pt.gov.dgarq.roda.wui.common.client.widgets.LazyVerticalList.LazyVerticalListListener;
+import pt.gov.dgarq.roda.wui.common.client.widgets.ListHeaderPanel;
 
 /**
  * Panel to manage all task instances

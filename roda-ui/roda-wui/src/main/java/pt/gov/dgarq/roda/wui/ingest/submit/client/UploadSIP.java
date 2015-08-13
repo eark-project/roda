@@ -3,17 +3,11 @@
  */
 package pt.gov.dgarq.roda.wui.ingest.submit.client;
 
-import pt.gov.dgarq.roda.wui.common.client.ClientLogger;
-import pt.gov.dgarq.roda.wui.common.client.widgets.WUIButton;
-import pt.gov.dgarq.roda.wui.common.fileupload.client.FileNameConstraints;
-import pt.gov.dgarq.roda.wui.common.fileupload.client.FileUploadPanel;
-import pt.gov.dgarq.roda.wui.ingest.client.Ingest;
-import pt.gov.dgarq.roda.wui.ingest.list.client.IngestList;
-
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.ChangeListener;
 import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.HasAlignment;
@@ -25,6 +19,12 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import config.i18n.client.IngestSubmitConstants;
+import pt.gov.dgarq.roda.wui.common.client.ClientLogger;
+import pt.gov.dgarq.roda.wui.common.client.widgets.WUIButton;
+import pt.gov.dgarq.roda.wui.common.fileupload.client.FileNameConstraints;
+import pt.gov.dgarq.roda.wui.common.fileupload.client.FileUploadPanel;
+import pt.gov.dgarq.roda.wui.ingest.client.Ingest;
+import pt.gov.dgarq.roda.wui.ingest.list.client.IngestList;
 
 /**
  * @author Luis Faria
@@ -34,8 +34,7 @@ public class UploadSIP {
 
 	private ClientLogger logger = new ClientLogger(getClass().getName());
 
-	private static IngestSubmitConstants constants = (IngestSubmitConstants) GWT
-			.create(IngestSubmitConstants.class);
+	private static IngestSubmitConstants constants = (IngestSubmitConstants) GWT.create(IngestSubmitConstants.class);
 
 	private boolean initialized;
 
@@ -47,9 +46,9 @@ public class UploadSIP {
 
 	private HorizontalPanel actionLayout;
 
-	private WUIButton getRodaIn;
+	private Button getRodaIn;
 
-	private WUIButton submitButton;
+	private Button submitButton;
 
 	private Image loading;
 
@@ -62,6 +61,7 @@ public class UploadSIP {
 	 */
 	public UploadSIP() {
 		layout = new VerticalPanel();
+		layout.addStyleName("wui-ingest-submit-upload");
 		initialized = false;
 	}
 
@@ -76,13 +76,11 @@ public class UploadSIP {
 
 			title = new Label(constants.uploadHeader());
 			FileNameConstraints fileNameConstraints = new FileNameConstraints();
-			fileNameConstraints
-					.addConstraint(new String[] { "zip", "sip" }, -1);
+			fileNameConstraints.addConstraint(new String[] { "zip", "sip", "xml" }, -1);
 			fileUpload = new FileUploadPanel(fileNameConstraints);
 			actionLayout = new HorizontalPanel();
 
-			submitButton = new WUIButton(constants.uploadSubmitButton(),
-					WUIButton.Left.ROUND, WUIButton.Right.ARROW_FORWARD);
+			submitButton = new Button(constants.uploadSubmitButton());
 
 			submitButton.addClickListener(new ClickListener() {
 
@@ -96,8 +94,7 @@ public class UploadSIP {
 
 			});
 
-			getRodaIn = new WUIButton(constants.uploadSubmitGetRodaIn(),
-					WUIButton.Left.ROUND, WUIButton.Right.ARROW_DOWN);
+			getRodaIn = new Button(constants.uploadSubmitGetRodaIn());
 
 			getRodaIn.addClickListener(new ClickListener() {
 
@@ -115,7 +112,7 @@ public class UploadSIP {
 
 			});
 
-			loading = new Image("images/loadingSmall.gif");
+			loading = new Image(GWT.getModuleBaseURL() + "images/loadingSmall.gif");
 			loadingMessage = new Label();
 
 			updateVisibles();
@@ -129,21 +126,21 @@ public class UploadSIP {
 			layout.add(fileUpload.getWidget());
 			layout.add(actionLayout);
 
-			layout.addStyleName("wui-ingest-submit-upload");
-			title.addStyleName("upload-title");
+			title.addStyleName("h3");
 			fileUpload.getWidget().addStyleName("upload-file");
 			actionLayout.addStyleName("upload-action");
 			submitButton.addStyleName("upload-action-button");
+			submitButton.addStyleName("btn");
+			submitButton.addStyleName("btn-play");
 			loading.addStyleName("upload-action-loading-image");
 			loadingMessage.addStyleName("upload-action-loading-message");
 			getRodaIn.addStyleName("upload-action-get-roda-in");
-			actionLayout.setCellVerticalAlignment(loading,
-					HasAlignment.ALIGN_MIDDLE);
-			actionLayout.setCellVerticalAlignment(loadingMessage,
-					HasAlignment.ALIGN_MIDDLE);
+			getRodaIn.addStyleName("btn");
+			getRodaIn.addStyleName("btn-download");
+			actionLayout.setCellVerticalAlignment(loading, HasAlignment.ALIGN_MIDDLE);
+			actionLayout.setCellVerticalAlignment(loadingMessage, HasAlignment.ALIGN_MIDDLE);
 			actionLayout.setCellWidth(getRodaIn, "100%");
-			actionLayout.setCellHorizontalAlignment(getRodaIn,
-					HasHorizontalAlignment.ALIGN_RIGHT);
+			actionLayout.setCellHorizontalAlignment(getRodaIn, HasHorizontalAlignment.ALIGN_RIGHT);
 		}
 	}
 
@@ -177,40 +174,37 @@ public class UploadSIP {
 
 			public void onSuccess(String[] fileCodes) {
 				loadingMessage.setText(constants.uploadLoadingIngest());
-				IngestSubmitService.Util.getInstance().submitSIPs(fileCodes,
-						new AsyncCallback<Boolean>() {
+				IngestSubmitService.Util.getInstance().submitSIPs(fileCodes, new AsyncCallback<Boolean>() {
 
-							public void onFailure(Throwable caught) {
-								logger.error("Error ingesting files", caught);
-								submitButton.setEnabled(true);
-								loading.setVisible(false);
-								loadingMessage.setVisible(false);
-							}
+					public void onFailure(Throwable caught) {
+						logger.error("Error ingesting files", caught);
+						submitButton.setEnabled(true);
+						loading.setVisible(false);
+						loadingMessage.setVisible(false);
+					}
 
-							public void onSuccess(Boolean allIngested) {
-								if (!allIngested.booleanValue()) {
-									Window.alert(constants
-											.uploadSubmitFailure());
-								}
-								ingesting = false;
-								updateVisibles();
+					public void onSuccess(Boolean allIngested) {
+						if (!allIngested.booleanValue()) {
+							Window.alert(constants.uploadSubmitFailure());
+						}
+						ingesting = false;
+						updateVisibles();
 
-								// Initialize ingest list
-								IngestList.getInstance().init();
+						// Initialize ingest list
+						// IngestList.getInstance().init();
 
-								// Set processing state filter
-								IngestList.getInstance().setStateFilter(
-										IngestList.StateFilter.PROCESSING);
+						// Set processing state filter
+						// FIXME
+						// IngestList.getInstance().setStateFilter(IngestList.StateFilter.PROCESSING);
 
-								// Update ingest list
-								IngestList.getInstance().update();
+						// Update ingest list
+						IngestList.getInstance().update();
 
-								// Show ingest list
-								History.newItem(IngestList.getInstance()
-										.getHistoryPath());
-							}
+						// Show ingest list
+						History.newItem(IngestList.RESOLVER.getHistoryPath());
+					}
 
-						});
+				});
 			}
 
 		});

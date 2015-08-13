@@ -36,6 +36,7 @@ import pt.gov.dgarq.roda.core.data.adapter.filter.Filter;
 import pt.gov.dgarq.roda.core.data.adapter.filter.FilterParameter;
 import pt.gov.dgarq.roda.core.data.adapter.filter.SimpleFilterParameter;
 import pt.gov.dgarq.roda.core.fedora.FedoraClientUtility;
+import pt.gov.dgarq.roda.servlet.cas.CASUserPrincipal;
 
 /**
  * Wrapper functions to connect to Fedora Resource Index Query Service.
@@ -156,8 +157,8 @@ public class FedoraRISearch {
 	 * 
 	 * @throws FedoraRISearchException
 	 */
-	public FedoraRISearch(FedoraClientUtility fedoraClientUtility, User user,
-			String password) throws FedoraRISearchException {
+	public FedoraRISearch(FedoraClientUtility fedoraClientUtility,
+			CASUserPrincipal user) throws FedoraRISearchException {
 
 		this.fedoraClientUtility = fedoraClientUtility;
 
@@ -194,8 +195,7 @@ public class FedoraRISearch {
 	public RODAObject getRODAObject(String PID)
 			throws NoSuchRODAObjectException, FedoraRISearchException {
 
-		Filter filter = new Filter(
-				new FilterParameter[] { new SimpleFilterParameter("pid", PID) });
+		Filter filter = new Filter(new SimpleFilterParameter("pid", PID) );
 
 		ITQLContentAdapterEngine<RODAObjectAdapter, RODAObject> riSearchAdapter = new ITQLContentAdapterEngine<RODAObjectAdapter, RODAObject>(
 				new RODAObjectAdapter(getUser()), new ContentAdapter(filter,
@@ -358,8 +358,7 @@ public class FedoraRISearch {
 	public SimpleDescriptionObject getSimpleDescriptionObject(String sdoPID)
 			throws NoSuchRODAObjectException, FedoraRISearchException {
 
-		Filter filter = new Filter(
-				new FilterParameter[] { new SimpleFilterParameter("pid", sdoPID) });
+		Filter filter = new Filter(new SimpleFilterParameter("pid", sdoPID) );
 
 		ITQLContentAdapterEngine<SimpleDescriptionObjectAdapter, SimpleDescriptionObject> riSearchAdapter = new ITQLContentAdapterEngine<SimpleDescriptionObjectAdapter, SimpleDescriptionObject>(
 				new SimpleDescriptionObjectAdapter(getUser()),
@@ -389,9 +388,7 @@ public class FedoraRISearch {
 
 			tuples.close();
 
-			logger
-					.trace("getSimpleDescriptionObject(" + sdoPID + ") => "
-							+ sdo);
+			logger.trace("getSimpleDescriptionObject(" + sdoPID + ") => " + sdo);
 
 			return sdo;
 
@@ -574,8 +571,9 @@ public class FedoraRISearch {
 			while (tuples.hasNext()) {
 				Map<String, Node> attributes = tuples.next();
 				childOfMap.put(getPIDFromFedoraURI(attributes.get("child")
-						.stringValue()), getPIDFromFedoraURI(attributes.get(
-						"parent").stringValue()));
+						.stringValue()),
+						getPIDFromFedoraURI(attributes.get("parent")
+								.stringValue()));
 			}
 
 			tuples.close();
@@ -679,9 +677,7 @@ public class FedoraRISearch {
 				getRIFedoraObjectURIFromPID(doPID),
 				ITQL_PREDICATE_RODA_DESCRIPTION_ID);
 
-		logger
-				.trace("getDOChildrenIDs(" + doPID + ") ITQL query: "
-						+ itqlQuery);
+		logger.trace("getDOChildrenIDs(" + doPID + ") ITQL query: " + itqlQuery);
 
 		List<String> childrenIDs = new ArrayList<String>();
 		try {
@@ -730,9 +726,7 @@ public class FedoraRISearch {
 				ITQL_PREDICATE_RODA_CHILD_OF,
 				ITQL_PREDICATE_RODA_DESCRIPTION_LEVEL);
 
-		logger
-				.trace("getDOParentLevel(" + doPID + ") ITQL query: "
-						+ itqlQuery);
+		logger.trace("getDOParentLevel(" + doPID + ") ITQL query: " + itqlQuery);
 
 		String parentLevel;
 		try {
@@ -752,9 +746,8 @@ public class FedoraRISearch {
 			}
 
 			if (tuples.hasNext()) {
-				logger
-						.warn("ITQL Query returned more than one parent level for PID "
-								+ doPID + "!!!");
+				logger.warn("ITQL Query returned more than one parent level for PID "
+						+ doPID + "!!!");
 			}
 
 			tuples.close();
@@ -893,27 +886,31 @@ public class FedoraRISearch {
 		doPIDs.add(doPID);
 
 		if (childDOs) {
-			doPIDs.addAll(getDescendantDescriptionObjectPIDs(doPID));
+			List<String> descendantDescriptionObjectPIDs = getDescendantDescriptionObjectPIDs(doPID);
+			descendantPIDs.addAll(descendantDescriptionObjectPIDs);
+			doPIDs.addAll(descendantDescriptionObjectPIDs);
 		}
 
-		// (DO "represented-by" RO)
-		List<String> roPIDs = getPIDsFromURIs(getTripleObjects(
-				getRIFedoraObjectURIFromPID(doPID),
-				ITQL_PREDICATE_RODA_REPRESENTED_BY));
-		descendantPIDs.addAll(roPIDs);
+		for (String doPIDtoProcess : doPIDs) {
+			// (DO "represented-by" RO)
+			List<String> roPIDs = getPIDsFromURIs(getTripleObjects(
+					getRIFedoraObjectURIFromPID(doPIDtoProcess),
+					ITQL_PREDICATE_RODA_REPRESENTED_BY));
+			descendantPIDs.addAll(roPIDs);
 
-		for (String roPID : roPIDs) {
-			List<String> rpoPIDs = getRORepresentationPreservationObjectPIDs(roPID);
-			descendantPIDs.addAll(rpoPIDs);
+			for (String roPID : roPIDs) {
+				List<String> rpoPIDs = getRORepresentationPreservationObjectPIDs(roPID);
+				descendantPIDs.addAll(rpoPIDs);
 
-			for (String rpoPID : rpoPIDs) {
-				// (EPO "performed-on" RPO)
-				List<String> epoPIDs = getPIDsFromURIs(getTripleSubjects(
-						ITQL_PREDICATE_RODA_PERFORMED_ON,
-						getRIFedoraObjectURIFromPID(rpoPID)));
-				descendantPIDs.addAll(epoPIDs);
+				for (String rpoPID : rpoPIDs) {
+					// (EPO "performed-on" RPO)
+					List<String> epoPIDs = getPIDsFromURIs(getTripleSubjects(
+							ITQL_PREDICATE_RODA_PERFORMED_ON,
+							getRIFedoraObjectURIFromPID(rpoPID)));
+					descendantPIDs.addAll(epoPIDs);
+				}
+
 			}
-
 		}
 
 		return new ArrayList<String>(descendantPIDs);
@@ -935,8 +932,7 @@ public class FedoraRISearch {
 			String sroPID) throws NoSuchRODAObjectException,
 			FedoraRISearchException {
 
-		Filter filter = new Filter(
-				new FilterParameter[] { new SimpleFilterParameter("pid", sroPID) });
+		Filter filter = new Filter(new SimpleFilterParameter("pid", sroPID));
 
 		ITQLContentAdapterEngine<SimpleRepresentationObjectAdapter, SimpleRepresentationObject> riSearchAdapter = new ITQLContentAdapterEngine<SimpleRepresentationObjectAdapter, SimpleRepresentationObject>(
 				new SimpleRepresentationObjectAdapter(getUser()),
@@ -1117,9 +1113,8 @@ public class FedoraRISearch {
 			String srpoPID) throws NoSuchRODAObjectException,
 			FedoraRISearchException {
 
-		Filter filter = new Filter(
-				new FilterParameter[] { new SimpleFilterParameter("pid",
-						srpoPID) });
+		Filter filter = new Filter(new SimpleFilterParameter("pid",
+						srpoPID) );
 
 		ITQLContentAdapterEngine<SimpleRepresentationPreservationObjectAdapter, SimpleRepresentationPreservationObject> riSearchAdapter = new ITQLContentAdapterEngine<SimpleRepresentationPreservationObjectAdapter, SimpleRepresentationPreservationObject>(
 				new SimpleRepresentationPreservationObjectAdapter(getUser()),
@@ -1325,9 +1320,8 @@ public class FedoraRISearch {
 			String sepoPID) throws NoSuchRODAObjectException,
 			FedoraRISearchException {
 
-		Filter filter = new Filter(
-				new FilterParameter[] { new SimpleFilterParameter("pid",
-						sepoPID) });
+		Filter filter = new Filter(new SimpleFilterParameter("pid",
+						sepoPID) );
 
 		ITQLContentAdapterEngine<SimpleEventPreservationObjectAdapter, SimpleEventPreservationObject> riSearchAdapter = new ITQLContentAdapterEngine<SimpleEventPreservationObjectAdapter, SimpleEventPreservationObject>(
 				new SimpleEventPreservationObjectAdapter(getUser()),
@@ -1622,8 +1616,8 @@ public class FedoraRISearch {
 				SimpleRepresentationObject sameSRO = srObjects.get(srObjects
 						.indexOf(sro));
 
-				List<String> joinStatuses = new ArrayList<String>(Arrays
-						.asList(sameSRO.getStatuses()));
+				List<String> joinStatuses = new ArrayList<String>(
+						Arrays.asList(sameSRO.getStatuses()));
 				joinStatuses.addAll(Arrays.asList(sro.getStatuses()));
 
 				sameSRO.setStatuses(joinStatuses
@@ -1809,8 +1803,7 @@ public class FedoraRISearch {
 			throws FedoraRISearchException {
 
 		String itqlQuery = String
-				.format(
-						"select $predicate $object from <#ri> where %1$s $predicate $object",
+				.format("select $predicate $object from <#ri> where %1$s $predicate $object",
 						subject);
 
 		logger.trace("getPredicateAndObjects( " + itqlQuery + " )");
@@ -2087,8 +2080,9 @@ public class FedoraRISearch {
 				Map<String, Node> attributes = tuples.next();
 
 				relationships.put(getPIDFromFedoraURI(attributes.get("roPID")
-						.stringValue()), getPIDFromFedoraURI(attributes.get(
-						"rpoPID").stringValue()));
+						.stringValue()),
+						getPIDFromFedoraURI(attributes.get("rpoPID")
+								.stringValue()));
 			}
 
 			tuples.close();

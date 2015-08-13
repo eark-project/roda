@@ -4,7 +4,6 @@
 package pt.gov.dgarq.roda.wui.common.client.widgets;
 
 import pt.gov.dgarq.roda.core.data.adapter.sort.SortParameter;
-import pt.gov.dgarq.roda.wui.common.client.images.CommonImageBundle;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.ClickListener;
@@ -17,6 +16,8 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SourcesClickEvents;
 import com.google.gwt.user.client.ui.Widget;
+
+import pt.gov.dgarq.roda.wui.common.client.images.CommonImageBundle;
 
 /**
  * @author Luis Faria
@@ -112,7 +113,7 @@ public class ListHeader extends Composite implements SourcesClickEvents {
 
 		if (sortParameters.length == 0) {
 			// no image
-			sortDirection.setUrl("clear.cache.gif");
+			sortDirection.setUrl(GWT.getModuleBaseURL() + "clear.cache.gif");
 		} else if (ascending == null) {
 			commonImageBundle.listSortDirection().applyTo(sortDirection);
 			sortDirection.addStyleDependentName("unsorted");

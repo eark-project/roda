@@ -6,10 +6,12 @@ package pt.gov.dgarq.roda.wui.management.statistics.client;
 import java.util.Date;
 import java.util.List;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
+
+import pt.gov.dgarq.roda.core.common.RODAException;
 import pt.gov.dgarq.roda.core.data.StatisticData;
 import pt.gov.dgarq.roda.core.data.adapter.ContentAdapter;
 import pt.gov.dgarq.roda.core.data.adapter.filter.Filter;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
  * @author Luis Faria
@@ -46,8 +48,7 @@ public interface StatisticsServiceAsync {
 	 * @return the result statistic data
 	 * @throws RODAException
 	 */
-	public void getStatisticList(ContentAdapter adapter,
-			List<StatisticFunction> functions, Segmentation segmentation,
+	public void getStatisticList(ContentAdapter adapter, List<StatisticFunction> functions, Segmentation segmentation,
 			Date initialDate, Date finalDate, AsyncCallback<List<StatisticData>> callback);
 
 	/**
@@ -64,11 +65,10 @@ public interface StatisticsServiceAsync {
 	 * @return A list of stacks, one for each type.
 	 * @throws RODAException
 	 */
-	public void getStatisticStackedList(
-			ContentAdapter adapter, List<StatisticFunction> functions,
-			Segmentation segmentation, Date initialDate, Date finalDate, AsyncCallback<List<List<StatisticData>>> callback);
+	public void getStatisticStackedList(ContentAdapter adapter, List<StatisticFunction> functions,
+			Segmentation segmentation, Date initialDate, Date finalDate,
+			AsyncCallback<List<List<StatisticData>>> callback);
 
-	public void setStatisticListReportInfo(ContentAdapter adapter,
-			String localeString, AsyncCallback<Void> callback);
+	public void setStatisticListReportInfo(ContentAdapter adapter, String localeString, AsyncCallback<Void> callback);
 
 }

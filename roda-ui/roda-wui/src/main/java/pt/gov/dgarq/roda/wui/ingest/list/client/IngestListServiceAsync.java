@@ -5,10 +5,17 @@ package pt.gov.dgarq.roda.wui.ingest.list.client;
 
 import java.util.Map;
 
-import pt.gov.dgarq.roda.core.data.SIPState;
-import pt.gov.dgarq.roda.core.data.adapter.ContentAdapter;
-import pt.gov.dgarq.roda.core.data.adapter.filter.Filter;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+
+import pt.gov.dgarq.roda.core.common.RODAException;
+import pt.gov.dgarq.roda.core.data.adapter.ContentAdapter;
+import pt.gov.dgarq.roda.core.data.adapter.facet.Facets;
+import pt.gov.dgarq.roda.core.data.adapter.filter.Filter;
+import pt.gov.dgarq.roda.core.data.adapter.sort.Sorter;
+import pt.gov.dgarq.roda.core.data.adapter.sublist.Sublist;
+import pt.gov.dgarq.roda.core.data.v2.IndexResult;
+import pt.gov.dgarq.roda.core.data.v2.SIPReport;
+import pt.gov.dgarq.roda.wui.common.client.PrintReportException;
 
 /**
  * @author Luis Faria
@@ -16,38 +23,18 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  */
 public interface IngestListServiceAsync {
 
-	/**
-	 * Get a SIPState with its SIP id
-	 * 
-	 * @param sipId
-	 * @return the SIP State or null if the sipId does not exist
-	 * @throws RODAException
-	 */
-	public void getSipState(String sipId, AsyncCallback<SIPState> callback);
+	void countSipReports(Filter filter, AsyncCallback<Long> callback);
 
-	/**
-	 * Get SIP count
-	 * 
-	 * @param filter
-	 * @return
-	 * @throws RODAException
-	 */
-	public void getSIPCount(Filter filter, AsyncCallback<Integer> callback);
+	void findSipReports(Filter filter, Sorter sorter, Sublist sublist, Facets facets,
+			AsyncCallback<IndexResult<SIPReport>> callback);
 
-	/**
-	 * Get SIP list
-	 * 
-	 * @param adapter
-	 * @return
-	 * @throws RODAException
-	 */
-	public void getSIPs(ContentAdapter adapter, AsyncCallback<SIPState[]> callback);
+	void retrieveSipReport(String sipReportId, AsyncCallback<SIPReport> callback);
 
 	/**
 	 * Accept a SIP
 	 * 
 	 * @param sipId
-	 * @param message 
+	 * @param message
 	 * @throws RODAException
 	 */
 	public void acceptSIP(String sipId, String message, AsyncCallback<Void> callback);
@@ -75,7 +62,6 @@ public interface IngestListServiceAsync {
 	 */
 	public void setSIPListReportInfo(ContentAdapter adapter, String locale, AsyncCallback<Void> callback);
 
-	
 	/**
 	 * Get accept message templates
 	 * 
@@ -83,7 +69,7 @@ public interface IngestListServiceAsync {
 	 * @return
 	 */
 	public void getAcceptMessageTemplates(String localeString, AsyncCallback<Map<String, String>> callback);
-	
+
 	/**
 	 * Get reject message templates
 	 * 

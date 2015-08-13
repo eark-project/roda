@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>pt.gov.dgarq.roda</groupId>
 		<artifactId>roda-ui</artifactId>
-		<version>1.2.0</version>
+		<version>2.0.0-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<packaging>war</packaging>
@@ -36,25 +36,36 @@
 							</execution>
 						</executions>
 					</plugin>
+					<!-- <plugin> <artifactId>maven-antrun-plugin</artifactId> <executions> 
+						<execution> <phase>prepare-package</phase> <configuration> <target> <move 
+						todir="${project.build.directory}/${project.build.finalName}"> <fileset dir="${project.build.directory}/${project.build.finalName}/pt.gov.dgarq.roda.wui.main.Main/" 
+						/> </move> <move todir="${project.build.directory}/${project.build.finalName}"> 
+						<fileset dir="${project.build.directory}/${project.build.finalName}/pt.gov.dgarq.roda.disseminators.common.loading.Loading/" 
+						/> </move> </target> </configuration> <goals> <goal>run</goal> </goals> </execution> 
+						</executions> </plugin> -->
 					<plugin>
-						<artifactId>maven-antrun-plugin</artifactId>
+						<artifactId>maven-clean-plugin</artifactId>
+						<configuration>
+							<filesets>
+								<fileset>
+									<directory>src/main</directory>
+									<includes>
+										<include>gwt-unitCache/**</include>
+										<include>webapp/pt.gov.dgarq.roda.disseminators.common.loading.Loading/**</include>
+										<include>webapp/pt.gov.dgarq.roda.wui.main.Main/**</include>
+										<include>webapp/WEB-INF/deploy/**</include>
+										<include>webapp/WEB-INF/classes/**</include>
+									</includes>
+									<followSymlinks>false</followSymlinks>
+								</fileset>
+							</filesets>
+						</configuration>
 						<executions>
 							<execution>
-								<phase>prepare-package</phase>
-								<configuration>
-									<target>
-										<move todir="${project.build.directory}/${project.build.finalName}">
-											<fileset
-												dir="${project.build.directory}/${project.build.finalName}/pt.gov.dgarq.roda.wui.main.Main/" />
-										</move>
-										<move todir="${project.build.directory}/${project.build.finalName}">
-											<fileset
-												dir="${project.build.directory}/${project.build.finalName}/pt.gov.dgarq.roda.disseminators.common.loading.Loading/" />
-										</move>
-									</target>
-								</configuration>
+								<id>gwt-clean</id>
+								<phase>initialize</phase>
 								<goals>
-									<goal>run</goal>
+									<goal>clean</goal>
 								</goals>
 							</execution>
 						</executions>
@@ -83,38 +94,18 @@
 							<optimizationLevel>0</optimizationLevel>
 						</configuration>
 					</plugin>
-					<plugin>
-						<artifactId>maven-antrun-plugin</artifactId>
-						<executions>
-							<execution>
-								<phase>prepare-package</phase>
-								<configuration>
-									<target>
-										<move todir="${project.build.directory}/${project.build.finalName}">
-											<fileset
-												dir="${project.build.directory}/${project.build.finalName}/pt.gov.dgarq.roda.wui.main.Main/" />
-										</move>
-										<move todir="${project.build.directory}/${project.build.finalName}">
-											<fileset
-												dir="${project.build.directory}/${project.build.finalName}/pt.gov.dgarq.roda.disseminators.common.loading.Loading/" />
-										</move>
-									</target>
-								</configuration>
-								<goals>
-									<goal>run</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
+					<!-- <plugin> <artifactId>maven-antrun-plugin</artifactId> <executions> 
+						<execution> <phase>prepare-package</phase> <configuration> <target> <move 
+						todir="${project.build.directory}/${project.build.finalName}"> <fileset dir="${project.build.directory}/${project.build.finalName}/pt.gov.dgarq.roda.wui.main.Main/" 
+						/> </move> <move todir="${project.build.directory}/${project.build.finalName}"> 
+						<fileset dir="${project.build.directory}/${project.build.finalName}/pt.gov.dgarq.roda.disseminators.common.loading.Loading/" 
+						/> </move> </target> </configuration> <goals> <goal>run</goal> </goals> </execution> 
+						</executions> </plugin> -->
 				</plugins>
 			</build>
 		</profile>
 	</profiles>
 	<dependencies>
-		<dependency>
-			<groupId>pt.gov.dgarq.roda</groupId>
-			<artifactId>roda-client</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>pt.gov.dgarq.roda</groupId>
 			<artifactId>roda-common-certification</artifactId>
@@ -140,18 +131,21 @@
 		<dependency>
 			<groupId>pt.gov.dgarq.roda</groupId>
 			<artifactId>roda-common-sip-utility</artifactId>
+			<exclusions>
+				<exclusion>
+					<artifactId>saxon</artifactId>
+					<groupId>net.sf.saxon</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>saxon-dom</artifactId>
+					<groupId>net.sf.saxon</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
-		<!-- <dependency> <groupId>pt.gov.dgarq.roda</groupId> <artifactId>roda-common-servlet-security</artifactId> 
-			</dependency> <dependency> <groupId>pt.gov.dgarq.roda</groupId> <artifactId>roda-common-utils</artifactId> 
-			</dependency> <dependency> <groupId>pt.gov.dgarq.roda</groupId> <artifactId>roda-common-metadata</artifactId> 
-			</dependency> <dependency> <groupId>pt.gov.dgarq.roda</groupId> <artifactId>ead-c.2008</artifactId> 
-			</dependency> <dependency> <groupId>pt.gov.dgarq.roda</groupId> <artifactId>roda-common-format-utility</artifactId> 
-			</dependency> <dependency> <groupId>pt.gov.dgarq.roda</groupId> <artifactId>roda-common-content-adapter</artifactId> 
-			</dependency> <dependency> <groupId>pt.gov.dgarq.roda</groupId> <artifactId>roda-core-plugins</artifactId> 
-			</dependency> <dependency> <groupId>pt.gov.dgarq.roda</groupId> <artifactId>roda-common-db</artifactId> 
-			</dependency> <dependency> <groupId>pt.gov.dgarq.roda</groupId> <artifactId>roda-common-ingest</artifactId> 
-			</dependency> <dependency> <groupId>pt.gov.dgarq.roda</groupId> <artifactId>fedora-client-utility</artifactId> 
-			</dependency> -->
+		<dependency>
+			<groupId>pt.gov.dgarq.roda</groupId>
+			<artifactId>roda-common-servlet-security</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>fop</artifactId>
@@ -167,11 +161,6 @@
 		<dependency>
 			<groupId>com.netthreads</groupId>
 			<artifactId>gwt-simile-timeline-dev</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.adamtacy</groupId>
-			<artifactId>gwt-fx</artifactId>
-			<classifier>RC2</classifier>
 		</dependency>
 		<dependency>
 			<groupId>com.google.gwt</groupId>
@@ -215,5 +204,90 @@
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.opensaml</groupId>
+			<artifactId>opensaml1</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.jasig.cas.client</groupId>
+			<artifactId>cas-client-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>xml-security</groupId>
+			<artifactId>xmlsec</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.objectweb.carol</groupId>
+			<artifactId>carol</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.roda-project</groupId>
+			<artifactId>roda-common-storage</artifactId>
+			<exclusions>
+				<exclusion>
+					<artifactId>asm</artifactId>
+					<groupId>org.ow2.asm</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>asm-commons</artifactId>
+					<groupId>org.ow2.asm</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>asm-debug-all</artifactId>
+					<groupId>org.ow2.asm</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>*</artifactId>
+					<groupId>org.eclipse.jetty</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.bytebybyte.gwt</groupId>
+			<artifactId>fontawesome-lib</artifactId>
+			<version>4.3.0</version>
+		</dependency>
 	</dependencies>
+	<build>
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.apache.maven.plugins
+										</groupId>
+										<artifactId>
+											maven-clean-plugin
+										</artifactId>
+										<versionRange>
+											[2.5,)
+										</versionRange>
+										<goals>
+											<goal>clean</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
 </project>

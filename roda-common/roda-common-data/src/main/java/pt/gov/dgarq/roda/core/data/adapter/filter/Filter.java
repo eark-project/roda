@@ -2,7 +2,6 @@ package pt.gov.dgarq.roda.core.data.adapter.filter;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -41,23 +40,29 @@ public class Filter implements Serializable {
 		add(parameter);
 	}
 
+	public Filter(FilterParameter... parameters) {
+		List<FilterParameter> parameterList = new ArrayList<FilterParameter>();
+		for (FilterParameter parameter : parameters) {
+			parameterList.add(parameter);
+		}
+		setParameters(parameterList);
+	}
+
 	/**
 	 * Constructs a {@link Filter} with the given parameters.
 	 * 
 	 * @param parameters
 	 */
-	public Filter(FilterParameter[] parameters) {
+	public Filter(List<FilterParameter> parameters) {
 		setParameters(parameters);
 	}
 
 	/**
 	 * @see Object#toString()
 	 */
+	@Override
 	public String toString() {
-		FilterParameter[] params = getParameters();
-		return "Filter ("
-				+ (params != null ? Arrays.asList(params).toString() : "")
-				+ ")";
+		return "Filter [parameters=" + parameters + "]";
 	}
 
 	/**
@@ -81,9 +86,8 @@ public class Filter implements Serializable {
 	 * 
 	 * @return an array of {@link FilterParameter} with this filter parameters.
 	 */
-	public FilterParameter[] getParameters() {
-		return (FilterParameter[]) parameters
-				.toArray(new FilterParameter[parameters.size()]);
+	public List<FilterParameter> getParameters() {
+		return parameters;
 	}
 
 	/**
@@ -92,20 +96,9 @@ public class Filter implements Serializable {
 	 * @param parameters
 	 *            an array of {@link FilterParameter} to set.
 	 */
-	public void setParameters(FilterParameter[] parameters) {
+	public void setParameters(List<FilterParameter> parameters) {
 		this.parameters.clear();
-		add(parameters);
-	}
-
-	/**
-	 * Adds the given parameters.
-	 * 
-	 * @param parameters
-	 */
-	public void add(FilterParameter[] parameters) {
-		if (parameters != null) {
-			this.parameters.addAll(Arrays.asList(parameters));
-		}
+		this.parameters.addAll(parameters);
 	}
 
 	/**
@@ -114,8 +107,14 @@ public class Filter implements Serializable {
 	 * @param parameter
 	 */
 	public void add(FilterParameter parameter) {
-		if (parameters != null) {
+		if (parameter != null) {
 			this.parameters.add(parameter);
+		}
+	}
+
+	public void add(List<FilterParameter> parameters) {
+		if (parameters != null) {
+			this.parameters.addAll(parameters);
 		}
 	}
 

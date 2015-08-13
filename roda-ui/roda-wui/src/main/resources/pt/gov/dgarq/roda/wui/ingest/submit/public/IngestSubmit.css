@@ -3,17 +3,18 @@
 /** Ingest Submit **/
 
 .wui-ingest-submit {
-	width: 98%;	
+	width: 100%;
+	padding: 40px;	
 }
 
 .wui-ingest-submit .gwt-TabBar{
-	background-color: #e6e7e8;
+	
 }
 
 /** Upload SIP **/ 
 
 .wui-ingest-submit-upload {
-	padding: 5px;
+	padding: 25px;
 }
 .wui-ingest-submit-upload .upload-title {
 	margin-bottom: 5px;
@@ -43,11 +44,12 @@
 .wui-ingest-submit-upload .upload-action-get-roda-in {
 	width: 200px;
 	margin: 5px;
+	float: right;
 }
 
 /** Create SIP **/
 .wui-ingest-submit-create {
-	padding: 5px;
+	padding: 25px;
 }
 .wui-ingest-submit-create .create-title {
 	margin-bottom: 5px;
@@ -67,9 +69,7 @@
 
 .wui-ingest-submit-create .create-metadata-toggle {
 	float: right;
-	margin: 5px;
-	color: #58595b;
-	font-size: 9pt;
+	margin-top: 10px;
 	white-space: nowrap;
 	text-decoration: underline;
 	cursor: pointer;
@@ -115,6 +115,7 @@
 .wui-ingest-submit-create .create-submit-get-roda-in {
 	width: 200px;
 	margin: 5px;
+	float: right;
 }
 
 /** # Content Model Selector **/

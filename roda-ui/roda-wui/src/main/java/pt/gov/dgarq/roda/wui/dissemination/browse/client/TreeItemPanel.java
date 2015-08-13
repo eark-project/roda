@@ -6,11 +6,6 @@ package pt.gov.dgarq.roda.wui.dissemination.browse.client;
 import java.util.List;
 import java.util.Vector;
 
-import pt.gov.dgarq.roda.core.data.SimpleDescriptionObject;
-import pt.gov.dgarq.roda.wui.common.client.ClientLogger;
-import pt.gov.dgarq.roda.wui.common.client.tools.StringUtility;
-import pt.gov.dgarq.roda.wui.dissemination.client.Dissemination;
-
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.FocusPanel;
@@ -25,6 +20,10 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import config.i18n.client.BrowseConstants;
+import pt.gov.dgarq.roda.core.data.v2.SimpleDescriptionObject;
+import pt.gov.dgarq.roda.wui.common.client.ClientLogger;
+import pt.gov.dgarq.roda.wui.common.client.tools.DescriptionLevelUtils;
+import pt.gov.dgarq.roda.wui.common.client.tools.StringUtility;
 
 /**
  * @author Luis Faria
@@ -36,8 +35,7 @@ public class TreeItemPanel extends FocusPanel implements SourcesSliderEvents {
 
 	private ClientLogger logger = new ClientLogger(getClass().getName());
 
-	private static BrowseConstants constants = (BrowseConstants) GWT
-			.create(BrowseConstants.class);
+	private static BrowseConstants constants = (BrowseConstants) GWT.create(BrowseConstants.class);
 
 	private final List<SliderEventListener> sliderListeners;
 
@@ -51,7 +49,7 @@ public class TreeItemPanel extends FocusPanel implements SourcesSliderEvents {
 
 	// private final int childrenCount;
 
-	final private Image waitImage = new Image("images/loadingSmall.gif");
+	final private Image waitImage = new Image(GWT.getModuleBaseURL() + "images/loadingSmall.gif");
 
 	private boolean showInfo;
 
@@ -73,8 +71,7 @@ public class TreeItemPanel extends FocusPanel implements SourcesSliderEvents {
 	 * @param showInfo
 	 *            whereas extended information should be presented
 	 */
-	public TreeItemPanel(SimpleDescriptionObject sdo, int childrenCount,
-			boolean showInfo) {
+	public TreeItemPanel(SimpleDescriptionObject sdo, int childrenCount, boolean showInfo) {
 		this.sdo = sdo;
 		this.showInfo = false;
 		// this.childrenCount = childrenCount;
@@ -94,7 +91,7 @@ public class TreeItemPanel extends FocusPanel implements SourcesSliderEvents {
 		label = new Label(labeltext);
 		label.setWordWrap(false);
 
-		image = Dissemination.getInstance().getElementLevelIcon(sdo.getLevel());
+		image = DescriptionLevelUtils.getElementLevelIconImage(sdo.getLevel());
 		if (image != null) {
 			layout.add(image);
 		}
@@ -131,14 +128,11 @@ public class TreeItemPanel extends FocusPanel implements SourcesSliderEvents {
 			this.showInfo = showInfo;
 			if (showInfo) {
 				title = new Label();
-				String normalizedTitle = StringUtility.normalizeSpaces(sdo
-						.getTitle());
-				title.setText(normalizedTitle == null ? constants.noTitle()
-						: normalizedTitle);
-				startDate = new Label(sdo.getDateInitial() == null ? constants
-						.noDate() : sdo.getDateInitial());
-				endDate = new Label(sdo.getDateFinal() == null ? constants
-						.noDate() : sdo.getDateFinal());
+				String normalizedTitle = StringUtility.normalizeSpaces(sdo.getTitle());
+				title.setText(normalizedTitle == null ? constants.noTitle() : normalizedTitle);
+				startDate = new Label(
+						sdo.getDateInitial() == null ? constants.noDate() : sdo.getDateInitial().toString());
+				endDate = new Label(sdo.getDateFinal() == null ? constants.noDate() : sdo.getDateFinal().toString());
 
 				title.addStyleName("treeitem-info-title");
 				startDate.addStyleName("treeitem-info-data");
@@ -207,9 +201,8 @@ public class TreeItemPanel extends FocusPanel implements SourcesSliderEvents {
 			header = new Label(sdo.getId());
 
 			scroll = new ScrollPanel();
-			description = new Label(sdo.getDescription() == null ? constants
-					.noDescription() : StringUtility.normalizeSpaces(sdo
-					.getDescription()));
+			description = new Label(sdo.getDescription() == null ? constants.noDescription()
+					: StringUtility.normalizeSpaces(sdo.getDescription()));
 
 			scroll.setWidget(description);
 			layout.add(header);
@@ -222,12 +215,9 @@ public class TreeItemPanel extends FocusPanel implements SourcesSliderEvents {
 					if (showPopup) {
 						setPopupPositionAndShow(new PositionCallback() {
 
-							public void setPosition(int offsetWidth,
-									int offsetHeight) {
-								ItemPopup.this.setPopupPosition(label
-										.getAbsoluteLeft(), label
-										.getAbsoluteTop()
-										- offsetHeight);
+							public void setPosition(int offsetWidth, int offsetHeight) {
+								ItemPopup.this.setPopupPosition(label.getAbsoluteLeft(),
+										label.getAbsoluteTop() - offsetHeight);
 							}
 
 						});

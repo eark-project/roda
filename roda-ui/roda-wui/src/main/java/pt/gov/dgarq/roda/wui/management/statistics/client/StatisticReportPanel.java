@@ -5,24 +5,16 @@ package pt.gov.dgarq.roda.wui.management.statistics.client;
 
 import java.util.List;
 
-import pt.gov.dgarq.roda.core.data.StatisticData;
-import pt.gov.dgarq.roda.core.data.adapter.ContentAdapter;
 import pt.gov.dgarq.roda.core.data.adapter.filter.Filter;
 import pt.gov.dgarq.roda.core.data.adapter.sort.SortParameter;
-import pt.gov.dgarq.roda.wui.common.client.images.CommonImageBundle;
-import pt.gov.dgarq.roda.wui.common.client.tools.Tools;
-import pt.gov.dgarq.roda.wui.common.client.widgets.DatePicker;
-import pt.gov.dgarq.roda.wui.common.client.widgets.ElementPanel;
-import pt.gov.dgarq.roda.wui.common.client.widgets.LazyVerticalList;
-import pt.gov.dgarq.roda.wui.common.client.widgets.WUIButton;
-import pt.gov.dgarq.roda.wui.common.client.widgets.WUIWindow;
-import pt.gov.dgarq.roda.wui.common.client.widgets.LazyVerticalList.ContentSource;
+import pt.gov.dgarq.roda.core.data.adapter.ContentAdapter;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.ChangeListener;
-import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HasAlignment;
@@ -36,6 +28,16 @@ import com.rednels.ofcgwt.client.model.ChartData;
 import com.rednels.ofcgwt.client.model.axis.XAxis;
 import com.rednels.ofcgwt.client.model.axis.YAxis;
 
+import pt.gov.dgarq.roda.core.data.StatisticData;
+import pt.gov.dgarq.roda.wui.common.client.images.CommonImageBundle;
+import pt.gov.dgarq.roda.wui.common.client.tools.Tools;
+import pt.gov.dgarq.roda.wui.common.client.widgets.DatePicker;
+import pt.gov.dgarq.roda.wui.common.client.widgets.ElementPanel;
+import pt.gov.dgarq.roda.wui.common.client.widgets.LazyVerticalList;
+import pt.gov.dgarq.roda.wui.common.client.widgets.LazyVerticalList.ContentSource;
+import pt.gov.dgarq.roda.wui.common.client.widgets.WUIButton;
+import pt.gov.dgarq.roda.wui.common.client.widgets.WUIWindow;
+
 /**
  * @author Luis Faria
  * 
@@ -43,8 +45,7 @@ import com.rednels.ofcgwt.client.model.axis.YAxis;
 public abstract class StatisticReportPanel extends StatisticsPanel {
 
 	// private ClientLogger logger = new ClientLogger(getClass().getName());
-	private CommonImageBundle images = (CommonImageBundle) GWT
-			.create(CommonImageBundle.class);
+	private CommonImageBundle images = (CommonImageBundle) GWT.create(CommonImageBundle.class);
 
 	private final WUIWindow window;
 	private final WUIButton close;
@@ -82,21 +83,18 @@ public abstract class StatisticReportPanel extends StatisticsPanel {
 	 *            statistic functions
 	 * @param segmentation
 	 */
-	public StatisticReportPanel(String title, String type,
-			ValueDimension dimension, Segmentation segmentation,
+	public StatisticReportPanel(String title, String type, ValueDimension dimension, Segmentation segmentation,
 			List<StatisticFunction> functions) {
 		super(title, type, dimension, segmentation, functions);
 
 		window = new WUIWindow(title, 900, 450);
 
-		close = new WUIButton(constants.statisticsReportClose(),
-				WUIButton.Left.ROUND, WUIButton.Right.CROSS);
+		close = new WUIButton(constants.statisticsReportClose(), WUIButton.Left.ROUND, WUIButton.Right.CROSS);
 
 		window.addToBottom(close);
 
-		close.addClickListener(new ClickListener() {
-
-			public void onClick(Widget sender) {
+		close.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
 				hide();
 			}
 
@@ -106,9 +104,7 @@ public abstract class StatisticReportPanel extends StatisticsPanel {
 
 		chartLayout = new DockPanel();
 		chartHeader = new HorizontalPanel();
-		chartSegmentationLabel = new Label(constants
-				.statisticsReportSegmentationLabel()
-				+ ":");
+		chartSegmentationLabel = new Label(constants.statisticsReportSegmentationLabel() + ":");
 		chartSegmentationPicker = new SegmentationPicker();
 
 		chartDateIntervalLabel = new Label();
@@ -123,6 +119,7 @@ public abstract class StatisticReportPanel extends StatisticsPanel {
 
 		chartWidget = new ChartWidget();
 		chartWidget.setSize("890px", "350px");
+		chartWidget.setFlashUrl(GWT.getModuleBaseURL() + "open-flash-chart.swf");
 
 		chartLayout.add(chartHeader, DockPanel.NORTH);
 		chartLayout.add(chartWidget, DockPanel.CENTER);
@@ -136,9 +133,8 @@ public abstract class StatisticReportPanel extends StatisticsPanel {
 
 		});
 
-		changeDateInterval.addClickListener(new ClickListener() {
-
-			public void onClick(Widget sender) {
+		changeDateInterval.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
 				getDateIntervalPickerWindow().show();
 			}
 
@@ -162,75 +158,52 @@ public abstract class StatisticReportPanel extends StatisticsPanel {
 		Filter lazyListFilter = new Filter();
 		lazyListFilter.add(getTypeFilterParameter());
 
-		lazyList = new LazyVerticalList<StatisticData>(
-				new ContentSource<StatisticData>() {
+		lazyList = new LazyVerticalList<StatisticData>(new ContentSource<StatisticData>() {
 
-					public void getCount(Filter filter,
-							AsyncCallback<Integer> callback) {
-						StatisticsService.Util.getInstance().getStatisticCount(
-								filter, callback);
+			public void getCount(Filter filter, AsyncCallback<Integer> callback) {
+				StatisticsService.Util.getInstance().getStatisticCount(filter, callback);
 
-					}
+			}
 
-					public ElementPanel<StatisticData> getElementPanel(
-							StatisticData element) {
-						return new StatisticListItem(element);
-					}
+			public ElementPanel<StatisticData> getElementPanel(StatisticData element) {
+				return new StatisticListItem(element);
+			}
 
-					public void getElements(ContentAdapter adapter,
-							final AsyncCallback<StatisticData[]> callback) {
-						StatisticsService.Util.getInstance().getStatisticList(
-								adapter,
-								new AsyncCallback<List<StatisticData>>() {
+			public void getElements(ContentAdapter adapter, final AsyncCallback<StatisticData[]> callback) {
+				StatisticsService.Util.getInstance().getStatisticList(adapter,
+						new AsyncCallback<List<StatisticData>>() {
 
-									public void onFailure(Throwable caught) {
-										callback.onFailure(caught);
-
-									}
-
-									public void onSuccess(
-											List<StatisticData> result) {
-										callback
-												.onSuccess(result
-														.toArray(new StatisticData[] {}));
-
-									}
-
-								});
+					public void onFailure(Throwable caught) {
+						callback.onFailure(caught);
 
 					}
 
-					public String getTotalMessage(int total) {
-						return total + " "
-								+ constants.statisticsReportListTotal();
-					}
-
-					public void setReportInfo(ContentAdapter adapter,
-							String locale, AsyncCallback<Void> callback) {
-						StatisticsService.Util.getInstance()
-								.setStatisticListReportInfo(adapter, locale,
-										callback);
+					public void onSuccess(List<StatisticData> result) {
+						callback.onSuccess(result.toArray(new StatisticData[] {}));
 
 					}
 
-				}, false, lazyListFilter);
+				});
 
-		lazyList.getHeader().addHeader(
-				constants.statisticsReportListHeaderDate(),
-				"statistic-list-header-date",
-				new SortParameter[] { new SortParameter("datetime", true) },
-				false);
-		lazyList.getHeader().addHeader(
-				constants.statisticsReportListHeaderType(),
-				"statistic-list-header-type",
+			}
+
+			public String getTotalMessage(int total) {
+				return total + " " + constants.statisticsReportListTotal();
+			}
+
+			public void setReportInfo(ContentAdapter adapter, String locale, AsyncCallback<Void> callback) {
+				StatisticsService.Util.getInstance().setStatisticListReportInfo(adapter, locale, callback);
+
+			}
+
+		}, false, lazyListFilter);
+
+		lazyList.getHeader().addHeader(constants.statisticsReportListHeaderDate(), "statistic-list-header-date",
+				new SortParameter[] { new SortParameter("datetime", true) }, false);
+		lazyList.getHeader().addHeader(constants.statisticsReportListHeaderType(), "statistic-list-header-type",
 				new SortParameter[] { new SortParameter("type", true) }, false);
-		lazyList
-				.getHeader()
-				.addHeader(
-						constants.statisticsReportListHeaderValue(),
-						"statistic-list-header-value",
-						new SortParameter[] { new SortParameter("value", true) },
-						false);
+		lazyList.getHeader().addHeader(constants.statisticsReportListHeaderValue(), "statistic-list-header-value",
+				new SortParameter[] { new SortParameter("value", true) }, false);
 
 		lazyList.getHeader().setFillerHeader(2);
 		lazyList.getHeader().setSelectedHeader(0);
@@ -247,8 +220,7 @@ public abstract class StatisticReportPanel extends StatisticsPanel {
 		chartLayout.addStyleName("wui-statistic-report-chart");
 		chartHeader.addStyleName("report-chart-header");
 		chartSegmentationLabel.addStyleName("report-chart-segmentation-label");
-		chartSegmentationPicker
-				.addStyleName("report-chart-segmentation-picker");
+		chartSegmentationPicker.addStyleName("report-chart-segmentation-picker");
 		chartDateIntervalLabel.addStyleName("report-chart-date-label");
 		changeDateInterval.addStyleName("report-chart-date-change");
 		chartWidget.addStyleName("report-chart-widget");
@@ -259,20 +231,14 @@ public abstract class StatisticReportPanel extends StatisticsPanel {
 
 	protected WUIWindow getDateIntervalPickerWindow() {
 		if (dateIntervalPickerWindow == null) {
-			dateIntervalPickerWindow = new WUIWindow(constants
-					.dateIntervalPickerWindowTitle(), 400, 100);
+			dateIntervalPickerWindow = new WUIWindow(constants.dateIntervalPickerWindowTitle(), 400, 100);
 			dateIntervalPickerLayout = new Grid(2, 2);
 
-			dateIntervalLabelInitial = new Label(constants
-					.dateIntervalLabelInitial()
-					+ ":");
-			dateIntervalLabelFinal = new Label(constants
-					.dateIntervalLabelFinal()
-					+ ":");
+			dateIntervalLabelInitial = new Label(constants.dateIntervalLabelInitial() + ":");
+			dateIntervalLabelFinal = new Label(constants.dateIntervalLabelFinal() + ":");
 			dateIntervalPickerInitial = new DatePicker();
 			dateIntervalPickerFinal = new DatePicker();
-			dateIntervalPickerApply = new WUIButton(constants
-					.dateIntervalPickerWindowApply(), WUIButton.Left.ROUND,
+			dateIntervalPickerApply = new WUIButton(constants.dateIntervalPickerWindowApply(), WUIButton.Left.ROUND,
 					WUIButton.Right.ARROW_FORWARD);
 
 			dateIntervalPickerWindow.setWidget(dateIntervalPickerLayout);
@@ -286,9 +252,8 @@ public abstract class StatisticReportPanel extends StatisticsPanel {
 			dateIntervalPickerInitial.setDate(getInitialDate());
 			dateIntervalPickerFinal.setDate(getFinalDate());
 
-			dateIntervalPickerApply.addClickListener(new ClickListener() {
-
-				public void onClick(Widget sender) {
+			dateIntervalPickerApply.addClickHandler(new ClickHandler() {
+				public void onClick(ClickEvent event) {
 					// date final must be set first because initial is relative
 					setFinalDate(dateIntervalPickerFinal.getDate());
 					setInitialDate(dateIntervalPickerInitial.getDate());
@@ -300,19 +265,13 @@ public abstract class StatisticReportPanel extends StatisticsPanel {
 			});
 
 			dateIntervalPickerLayout.addStyleName("report-date-change");
-			dateIntervalLabelInitial
-					.addStyleName("report-date-change-label-initial");
-			dateIntervalLabelFinal
-					.addStyleName("report-date-change-label-final");
-			dateIntervalPickerInitial
-					.addStyleName("report-date-change-picker-initial");
-			dateIntervalPickerFinal
-					.addStyleName("report-date-change-picker-final");
+			dateIntervalLabelInitial.addStyleName("report-date-change-label-initial");
+			dateIntervalLabelFinal.addStyleName("report-date-change-label-final");
+			dateIntervalPickerInitial.addStyleName("report-date-change-picker-initial");
+			dateIntervalPickerFinal.addStyleName("report-date-change-picker-final");
 
-			dateIntervalPickerLayout.getCellFormatter().setHorizontalAlignment(
-					0, 0, HasAlignment.ALIGN_RIGHT);
-			dateIntervalPickerLayout.getCellFormatter().setHorizontalAlignment(
-					1, 0, HasAlignment.ALIGN_RIGHT);
+			dateIntervalPickerLayout.getCellFormatter().setHorizontalAlignment(0, 0, HasAlignment.ALIGN_RIGHT);
+			dateIntervalPickerLayout.getCellFormatter().setHorizontalAlignment(1, 0, HasAlignment.ALIGN_RIGHT);
 
 		}
 		return dateIntervalPickerWindow;
@@ -332,13 +291,11 @@ public abstract class StatisticReportPanel extends StatisticsPanel {
 		window.hide();
 	}
 
-	protected final DateTimeFormat DATE_FORMAT = DateTimeFormat
-			.getFormat("yyyy-MM-dd");
+	protected final DateTimeFormat DATE_FORMAT = DateTimeFormat.getFormat("yyyy-MM-dd");
 
 	protected void updateDateIntervalLabel() {
-		chartDateIntervalLabel.setText(DATE_FORMAT.format(getInitialDate())
-				+ " " + constants.statisticsReportDateSeparatorLabel() + " "
-				+ DATE_FORMAT.format(getFinalDate()));
+		chartDateIntervalLabel.setText(DATE_FORMAT.format(getInitialDate()) + " "
+				+ constants.statisticsReportDateSeparatorLabel() + " " + DATE_FORMAT.format(getFinalDate()));
 
 	}
 

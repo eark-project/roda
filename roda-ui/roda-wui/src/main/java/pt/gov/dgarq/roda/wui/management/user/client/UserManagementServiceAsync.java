@@ -3,12 +3,19 @@
  */
 package pt.gov.dgarq.roda.wui.management.user.client;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
+
+import pt.gov.dgarq.roda.core.common.RODAException;
 import pt.gov.dgarq.roda.core.data.Group;
-import pt.gov.dgarq.roda.core.data.LogEntry;
 import pt.gov.dgarq.roda.core.data.User;
 import pt.gov.dgarq.roda.core.data.adapter.ContentAdapter;
+import pt.gov.dgarq.roda.core.data.adapter.facet.Facets;
 import pt.gov.dgarq.roda.core.data.adapter.filter.Filter;
-import com.google.gwt.user.client.rpc.AsyncCallback;
+import pt.gov.dgarq.roda.core.data.adapter.sort.Sorter;
+import pt.gov.dgarq.roda.core.data.adapter.sublist.Sublist;
+import pt.gov.dgarq.roda.core.data.v2.IndexResult;
+import pt.gov.dgarq.roda.core.data.v2.LogEntry;
+import pt.gov.dgarq.roda.wui.common.client.PrintReportException;
 
 /**
  * @author Luis Faria
@@ -83,8 +90,7 @@ public interface UserManagementServiceAsync {
 	 * 
 	 * @throws RODAException
 	 */
-	public void getUsers(Character letter, String filter, int startItem,
-			int limit, AsyncCallback<User[]> callback);
+	public void getUsers(Character letter, String filter, int startItem, int limit, AsyncCallback<User[]> callback);
 
 	/**
 	 * Get the total number of groups
@@ -129,8 +135,7 @@ public interface UserManagementServiceAsync {
 	 * @return An array with the list of groups that pass through the conditions
 	 * @throws RODAException
 	 */
-	public void getGroups(Character letter, String filter, int startItem,
-			int limit, AsyncCallback<Group[]> callback);
+	public void getGroups(Character letter, String filter, int startItem, int limit, AsyncCallback<Group[]> callback);
 
 	/**
 	 * Get the groups to which a user belongs to
@@ -307,16 +312,10 @@ public interface UserManagementServiceAsync {
 	 * @return
 	 * @throws RODAException
 	 */
-	public void getLogEntriesCount(Filter filter, AsyncCallback<Integer> callback);
+	void getLogEntriesCount(Filter filter, AsyncCallback<Long> callback);
 
-	/**
-	 * Get the log entries
-	 * 
-	 * @param adapter
-	 * @return
-	 * @throws RODAException
-	 */
-	public void getLogEntries(ContentAdapter adapter, AsyncCallback<LogEntry[]> callback);
+	void findLogEntries(Filter filter, Sorter sorter, Sublist sublist, Facets facets,
+			AsyncCallback<IndexResult<LogEntry>> callback);
 
 	/**
 	 * Register a new user
@@ -365,7 +364,7 @@ public interface UserManagementServiceAsync {
 	 * @param email
 	 *            the new email
 	 * @return true if email was successfully changed, false otherwise
-	 * @throws RODAException 
+	 * @throws RODAException
 	 * 
 	 */
 	public void changeUnverifiedEmail(String username, String email, AsyncCallback<Boolean> callback);
@@ -396,15 +395,15 @@ public interface UserManagementServiceAsync {
 	 * @throws RODAException
 	 * 
 	 */
-	public void resetPassword(String username, String resetPasswordToken,
-			String newPassword, AsyncCallback<Void> callback);
+	public void resetPassword(String username, String resetPasswordToken, String newPassword,
+			AsyncCallback<Void> callback);
 
 	/**
 	 * Set user log report info
 	 * 
 	 * @param adapter
 	 * @param localeString
-	 * @throws PrintReportException 
+	 * @throws PrintReportException
 	 */
 	public void setUserLogReportInfo(ContentAdapter adapter, String localeString, AsyncCallback<Void> callback);
 

@@ -3,12 +3,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<name>roda-installer</name>
 	<artifactId>roda-installer</artifactId>
-	<version>1.2.0</version>
+	<version>2.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<parent>
 		<groupId>pt.gov.dgarq.roda</groupId>
 		<artifactId>roda</artifactId>
-		<version>1.2.0</version>
+		<version>2.0.0-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<properties>
@@ -41,11 +41,11 @@
 	</build>
 	<dependencies>
 		<dependency>
-   		<groupId>org.objectweb.carol</groupId>
+			<groupId>org.objectweb.carol</groupId>
 			<artifactId>carol</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>commons-configuration</groupId> 
+			<groupId>commons-configuration</groupId>
 			<artifactId>commons-configuration</artifactId>
 		</dependency>
 		<dependency>
@@ -55,6 +55,26 @@
 		<dependency>
 			<groupId>org.w3c</groupId>
 			<artifactId>w3c-utils</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.opensaml</groupId>
+			<artifactId>opensaml1</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.jasig.cas.client</groupId>
+			<artifactId>cas-client-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>xml-security</groupId>
+			<artifactId>xmlsec</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.objectweb.carol</groupId>
+			<artifactId>carol</artifactId>
 		</dependency>
 	</dependencies>
 </project>

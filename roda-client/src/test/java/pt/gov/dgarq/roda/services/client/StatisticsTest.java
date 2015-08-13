@@ -9,10 +9,11 @@ import pt.gov.dgarq.roda.core.data.StatisticData;
 import pt.gov.dgarq.roda.core.data.adapter.ContentAdapter;
 import pt.gov.dgarq.roda.core.data.adapter.filter.Filter;
 import pt.gov.dgarq.roda.core.data.adapter.filter.FilterParameter;
-import pt.gov.dgarq.roda.core.data.adapter.filter.RangeFilterParameter;
+import pt.gov.dgarq.roda.core.data.adapter.filter.LongRangeFilterParameter;
 import pt.gov.dgarq.roda.core.data.adapter.filter.RegexFilterParameter;
 import pt.gov.dgarq.roda.core.stubs.Statistics;
 import pt.gov.dgarq.roda.core.stubs.StatisticsMonitor;
+import pt.gov.dgarq.roda.servlet.cas.CASUtility;
 
 /**
  * Test class for {@link Statistics} and {@link StatisticsMonitor} service.
@@ -30,34 +31,38 @@ public class StatisticsTest {
 
 			RODAClient rodaClient = null;
 
-			if (args.length == 1) {
+			if (args.length == 4) {
 
 				// http://localhost:8180/
 				String hostUrl = args[0];
+				String casURL = args[1];
+				String coreURL = args[2];
+				String serviceURL = args[3];
+				CASUtility casUtility = new CASUtility(new URL(casURL), new URL(coreURL), new URL(serviceURL));
+				rodaClient = new RODAClient(new URL(hostUrl), casUtility);
 
-				rodaClient = new RODAClient(new URL(hostUrl));
-
-			} else if (args.length >= 3) {
+			} else if (args.length >= 6) {
 
 				// http://localhost:8180/ user pass
 				String hostUrl = args[0];
 				String username = args[1];
 				String password = args[2];
-
-				rodaClient = new RODAClient(new URL(hostUrl), username,
-						password);
+				String casURL = args[3];
+				String coreURL = args[4];
+				String serviceURL = args[5];
+				CASUtility casUtility = new CASUtility(new URL(casURL), new URL(coreURL), new URL(serviceURL));
+				rodaClient = new RODAClient(new URL(hostUrl), username, password, casUtility);
 			} else {
 				System.err.println(LoggerTest.class.getSimpleName()
-						+ " protocol://hostname:port/ [username password]");
+						+ " protocol://hostname:port/ [username password] casURL coreServicesURL");
 				System.exit(1);
 			}
 
 			Statistics statisticsService = rodaClient.getStatisticsService();
-			StatisticsMonitor statisticsMonitorService = rodaClient
-					.getStatisticsMonitorService();
+			StatisticsMonitor statisticsMonitorService = rodaClient.getStatisticsMonitorService();
 
-			StatisticData[] statisticDataToInsert = new StatisticData[] { new StatisticData(
-					new Date(), "fake.logs.action.disseminator\\..*", "666") };
+			StatisticData[] statisticDataToInsert = new StatisticData[] {
+					new StatisticData(new Date(), "fake.logs.action.disseminator\\..*", "666") };
 
 			/*
 			 * Insert statistics
@@ -66,8 +71,7 @@ public class StatisticsTest {
 			System.out.println("Insert 1 statistic value ");
 			System.out.println("***********************************");
 
-			System.out.println("Adding "
-					+ Arrays.toString(statisticDataToInsert));
+			System.out.println("Adding " + Arrays.toString(statisticDataToInsert));
 
 			statisticsService.insertStatisticDataList(statisticDataToInsert);
 
@@ -82,28 +86,21 @@ public class StatisticsTest {
 			System.out.println("StatisticData count without filter: " + count);
 
 			System.out.println("\n***********************************");
-			System.out
-					.println("Get StatisticData with values between 0 and 1000");
+			System.out.println("Get StatisticData with values between 0 and 1000");
 			System.out.println("***********************************");
 
-			Filter filter = new Filter(
-					new FilterParameter[] { new RangeFilterParameter("value",
-							"0", "1000") });
+			Filter filter = new Filter(new LongRangeFilterParameter("value", 0L, 1000L));
 			StatisticData[] statisticData = statisticsMonitorService
 					.getStatisticData(new ContentAdapter(filter, null, null));
 
 			System.out.println(Arrays.toString(statisticData));
 
 			System.out.println("\n***********************************");
-			System.out
-					.println("Get StatisticData with type starting with od.bla");
+			System.out.println("Get StatisticData with type starting with od.bla");
 			System.out.println("***********************************");
 
-			filter = new Filter(
-					new FilterParameter[] { new RegexFilterParameter("type",
-							"od\\.bla.*") });
-			statisticData = statisticsMonitorService
-					.getStatisticData(new ContentAdapter(filter, null, null));
+			filter = new Filter(new RegexFilterParameter("type", "od\\.bla.*"));
+			statisticData = statisticsMonitorService.getStatisticData(new ContentAdapter(filter, null, null));
 
 			System.out.println(Arrays.toString(statisticData));
 

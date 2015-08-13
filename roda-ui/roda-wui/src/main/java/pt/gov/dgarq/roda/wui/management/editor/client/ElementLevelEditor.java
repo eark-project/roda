@@ -6,16 +6,17 @@ package pt.gov.dgarq.roda.wui.management.editor.client;
 import java.util.List;
 import java.util.Vector;
 
-import pt.gov.dgarq.roda.core.data.eadc.DescriptionLevel;
-import pt.gov.dgarq.roda.core.data.eadc.EadCValue;
-import pt.gov.dgarq.roda.wui.common.client.ClientLogger;
-import pt.gov.dgarq.roda.wui.dissemination.client.Dissemination;
-
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.ChangeListener;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
+
+import pt.gov.dgarq.roda.core.data.eadc.DescriptionLevel;
+import pt.gov.dgarq.roda.core.data.eadc.EadCValue;
+import pt.gov.dgarq.roda.wui.common.client.ClientLogger;
+import pt.gov.dgarq.roda.wui.common.client.tools.DescriptionLevelUtils;
+import pt.gov.dgarq.roda.wui.dissemination.client.Dissemination;
 
 /**
  * @author Luis Faria
@@ -37,22 +38,20 @@ public class ElementLevelEditor implements MetadataElementEditor {
 		waitingForInitialization = new Vector<Command>();
 
 		if (pid == null) {
-			init(new DescriptionLevel[] { DescriptionLevel.FILE,
-					DescriptionLevel.ITEM });
+			init(DescriptionLevelUtils.REPRESENTATION_DESCRIPTION_LEVELS
+					.toArray(new DescriptionLevel[DescriptionLevelUtils.REPRESENTATION_DESCRIPTION_LEVELS.size()]));
 		} else {
-			EditorService.Util.getInstance().getPossibleLevels(pid,
-					new AsyncCallback<DescriptionLevel[]>() {
+			EditorService.Util.getInstance().getPossibleLevels(pid, new AsyncCallback<DescriptionLevel[]>() {
 
-						public void onFailure(Throwable caught) {
-							logger.error("Error getting possible levels for "
-									+ pid, caught);
-						}
+				public void onFailure(Throwable caught) {
+					logger.error("Error getting possible levels for " + pid, caught);
+				}
 
-						public void onSuccess(DescriptionLevel[] possibleLevels) {
-							init(possibleLevels);
-						}
+				public void onSuccess(DescriptionLevel[] possibleLevels) {
+					init(possibleLevels);
+				}
 
-					});
+			});
 		}
 
 		layout.addStyleName("wui-editor-level");
@@ -61,12 +60,11 @@ public class ElementLevelEditor implements MetadataElementEditor {
 	private void init(DescriptionLevel[] possibleLevels) {
 
 		for (int i = 0; i < possibleLevels.length; i++) {
-			layout.addItem(Dissemination.getInstance()
-					.getElementLevelTranslation(possibleLevels[i]),
+			layout.addItem(Dissemination.getInstance().getElementLevelTranslation(possibleLevels[i]),
 					possibleLevels[i].getLevel());
 		}
 		initialized = true;
-		for(Command command : waitingForInitialization) {
+		for (Command command : waitingForInitialization) {
 			command.execute();
 		}
 	}
@@ -74,7 +72,9 @@ public class ElementLevelEditor implements MetadataElementEditor {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see pt.gov.dgarq.roda.office.management.editor.client.MetadataElementEditor#getValue()
+	 * @see
+	 * pt.gov.dgarq.roda.office.management.editor.client.MetadataElementEditor
+	 * #getValue()
 	 */
 	public EadCValue getValue() {
 		return new DescriptionLevel(layout.getValue(layout.getSelectedIndex()));
@@ -83,7 +83,9 @@ public class ElementLevelEditor implements MetadataElementEditor {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see pt.gov.dgarq.roda.office.management.editor.client.MetadataElementEditor#getWidget()
+	 * @see
+	 * pt.gov.dgarq.roda.office.management.editor.client.MetadataElementEditor
+	 * #getWidget()
 	 */
 	public Widget getWidget() {
 		return layout;
@@ -92,7 +94,9 @@ public class ElementLevelEditor implements MetadataElementEditor {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see pt.gov.dgarq.roda.office.management.editor.client.MetadataElementEditor#isEmpty()
+	 * @see
+	 * pt.gov.dgarq.roda.office.management.editor.client.MetadataElementEditor
+	 * #isEmpty()
 	 */
 	public boolean isEmpty() {
 		return false;
@@ -101,7 +105,9 @@ public class ElementLevelEditor implements MetadataElementEditor {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see pt.gov.dgarq.roda.office.management.editor.client.MetadataElementEditor#setValue(pt.gov.dgarq.roda.core.data.eadc.EadCValue)
+	 * @see
+	 * pt.gov.dgarq.roda.office.management.editor.client.MetadataElementEditor
+	 * #setValue(pt.gov.dgarq.roda.core.data.eadc.EadCValue)
 	 */
 	public void setValue(EadCValue value) {
 		if (value != null && value instanceof DescriptionLevel) {
@@ -129,15 +135,16 @@ public class ElementLevelEditor implements MetadataElementEditor {
 			}
 		}
 		if (!foundit) {
-			logger.error("Tryed to set level to a illegal value: '" + level
-					+ "'");
+			logger.error("Tryed to set level to a illegal value: '" + level + "'");
 		}
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.google.gwt.user.client.ui.SourcesChangeEvents#addChangeListener(com.google.gwt.user.client.ui.ChangeListener)
+	 * @see
+	 * com.google.gwt.user.client.ui.SourcesChangeEvents#addChangeListener(com
+	 * .google.gwt.user.client.ui.ChangeListener)
 	 */
 	public void addChangeListener(ChangeListener listener) {
 		layout.addChangeListener(listener);
@@ -146,10 +153,22 @@ public class ElementLevelEditor implements MetadataElementEditor {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.google.gwt.user.client.ui.SourcesChangeEvents#removeChangeListener(com.google.gwt.user.client.ui.ChangeListener)
+	 * @see
+	 * com.google.gwt.user.client.ui.SourcesChangeEvents#removeChangeListener
+	 * (com.google.gwt.user.client.ui.ChangeListener)
 	 */
 	public void removeChangeListener(ChangeListener listener) {
 		layout.removeChangeListener(listener);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * pt.gov.dgarq.roda.office.management.editor.client.MetadataElementEditor
+	 * #isValid()
+	 */
+	public boolean isValid() {
+		return true;
+	}
 }

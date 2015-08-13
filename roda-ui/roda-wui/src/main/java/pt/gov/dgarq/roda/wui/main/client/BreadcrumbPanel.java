@@ -3,41 +3,31 @@
  */
 package pt.gov.dgarq.roda.wui.main.client;
 
-import java.util.MissingResourceException;
+import java.util.List;
 import java.util.Stack;
+
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.Widget;
 
 import pt.gov.dgarq.roda.wui.common.client.AuthenticatedUser;
 import pt.gov.dgarq.roda.wui.common.client.LoginStatusListener;
 import pt.gov.dgarq.roda.wui.common.client.UserLogin;
 import pt.gov.dgarq.roda.wui.common.client.tools.Tools;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Hyperlink;
-import com.google.gwt.user.client.ui.Widget;
-
-import config.i18n.client.MainConstants;
-
 /**
  * @author Luis Faria
  * 
  */
-public class BreadcrumbPanel {
+public class BreadcrumbPanel extends HorizontalPanel {
 
-	// private GWTLogger logger = new GWTLogger(GWT.getTypeName(this));
-
-	private static MainConstants mainConstants = (MainConstants) GWT
-			.create(MainConstants.class);
-
-	private final ContentPanel contentPanel;
-
-	private String[] currentpath;
+	private List<BreadcrumbItem> currentpath;
 
 	private final Stack<Breadcrumb> breadcrumbs;
-
-	private final HorizontalPanel layout;
 
 	/**
 	 * Create a new Breadcrumb panel
@@ -45,24 +35,21 @@ public class BreadcrumbPanel {
 	 * @param contentPanel
 	 *            the content panel this breadcrumb panel will manage
 	 */
-	public BreadcrumbPanel(ContentPanel contentPanel) {
+	public BreadcrumbPanel() {
 		super();
-		this.contentPanel = contentPanel;
 		this.breadcrumbs = new Stack<Breadcrumb>();
-		this.layout = new HorizontalPanel();
 
 		this.currentpath = null;
 
-		UserLogin.getInstance().addLoginStatusListener(
-				new LoginStatusListener() {
+		UserLogin.getInstance().addLoginStatusListener(new LoginStatusListener() {
 
-					public void onLoginStatusChanged(AuthenticatedUser user) {
-						updatePath(currentpath);
-					}
+			public void onLoginStatusChanged(AuthenticatedUser user) {
+				updatePath(currentpath);
+			}
 
-				});
+		});
 
-		layout.addStyleName("wui-breadcrumbPanel");
+		addStyleName("wui-breadcrumbPanel");
 
 	}
 
@@ -79,86 +66,48 @@ public class BreadcrumbPanel {
 	 *            the new history path
 	 * 
 	 */
-	public void updatePath(String[] path) {
+	public void updatePath(List<BreadcrumbItem> path) {
 
-		// Check for common path
-		int commonPathIndex = 0;
-		boolean isCommonPath = true;
-		int minLenght = Math.min(path.length, breadcrumbs.size());
-		while (isCommonPath && commonPathIndex < minLenght) {
-			String pathToken = path[commonPathIndex];
-			Breadcrumb breadcrumb = (Breadcrumb) breadcrumbs
-					.elementAt(commonPathIndex);
-			if (pathToken.equals(breadcrumb.getLastToken())) {
-				commonPathIndex++;
-			} else {
-				isCommonPath = false;
-			}
+		breadcrumbs.clear();
+		for (final BreadcrumbItem item : path) {
+			Breadcrumb breadcrumb = new Breadcrumb(item);
+			breadcrumb.addClickHandler(new ClickHandler() {
+
+				@Override
+				public void onClick(ClickEvent event) {
+					item.getCommand().execute();
+				}
+			});
+			breadcrumbs.add(breadcrumb);
 		}
-
-		// Pop path differences
-		if (commonPathIndex == 0) {
-			this.clear();
-			breadcrumbs.clear();
-		} else {
-			int difference = breadcrumbs.size() - commonPathIndex;
-			while (difference > 0) {
-				this.breadcrumbs.pop();
-				difference--;
-			}
-		}
-
-		// Push the remain
-		for (int i = commonPathIndex; i < path.length; i++) {
-			String[] relativePath = new String[i + 1];
-			for (int j = 0; j <= i; j++) {
-				relativePath[j] = path[j];
-			}
-			push(relativePath);
-		}
-
 		updateLayout();
 
-		// Refresh contentPanel
-		contentPanel.update(path);
 		currentpath = path;
 	}
 
-	protected void clear() {
+
+
+	public void clear() {
 		breadcrumbs.clear();
 		updateLayout();
 	}
 
 	protected void updateLayout() {
-		layout.clear();
+		super.clear();
 		for (int i = 0; i < breadcrumbs.size(); i++) {
 			if (i > 0) {
-				layout.add(createSeparator());
+				add(createSeparator());
 			}
 			Breadcrumb breadcrumb = (Breadcrumb) breadcrumbs.get(i);
 			breadcrumb.setLast(i == breadcrumbs.size() - 1);
-			layout.add(breadcrumb);
+			add(breadcrumb);
 		}
 
 	}
 
-	protected void push(String[] path) {
-		Breadcrumb breadcrumb = new Breadcrumb(path);
-		breadcrumbs.add(breadcrumb);
-	}
+	protected class Breadcrumb extends HTML {
 
-	/**
-	 * Get the layout widget
-	 * 
-	 * @return the widget
-	 */
-	public Widget getWidget() {
-		return layout;
-	}
-
-	protected class Breadcrumb extends Hyperlink {
-
-		private String[] path;
+		private BreadcrumbItem item;
 
 		private boolean enabled;
 
@@ -170,11 +119,11 @@ public class BreadcrumbPanel {
 		 * @param path
 		 *            the history path that this breadcrumb points to
 		 */
-		public Breadcrumb(String[] path) {
+		public Breadcrumb(final BreadcrumbItem item) {
 			super();
-			super.setText(getText(path));
-			super.setTargetHistoryToken(getTargetHistoryToken(path));
-			this.path = path;
+			setHTML(item.getLabel());
+
+			this.item = item;
 			enabled = true;
 			last = true;
 
@@ -215,8 +164,8 @@ public class BreadcrumbPanel {
 		 * 
 		 * @return the breadcrumb history path
 		 */
-		public String[] getPath() {
-			return path;
+		public BreadcrumbItem getItem() {
+			return item;
 		}
 
 		/**
@@ -224,9 +173,9 @@ public class BreadcrumbPanel {
 		 * 
 		 * @return the last history token
 		 */
-		public String getLastToken() {
-			return path[path.length - 1];
-		}
+		// public String getLastToken() {
+		// return path[path.length - 1];
+		// }
 
 		/**
 		 * Set if this breadcrumb is the last one. The last breadcrumb will be
@@ -248,18 +197,6 @@ public class BreadcrumbPanel {
 			if (enabled) {
 				super.onBrowserEvent(event);
 			}
-		}
-
-		protected String getText(String[] path) {
-			String tokenI18N;
-			try {
-				tokenI18N = mainConstants.getString(
-						"title_" + Tools.join(path, "_"))
-						.toLowerCase();
-			} catch (MissingResourceException e) {
-				tokenI18N = path[path.length - 1].toLowerCase();
-			}
-			return tokenI18N;
 		}
 
 		protected String getTargetHistoryToken(String[] path) {
